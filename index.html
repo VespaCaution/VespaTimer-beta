@@ -216,7 +216,24 @@ function installPWA(){ if(deferredPrompt){ deferredPrompt.prompt(); deferredProm
 function installPWAFallback(){ alert('📱 Android: Menu Chrome → Installer l\'application\n📱 iOS: Safari → Partager → Sur l\'écran d\'accueil\n💻 PC: Menu navigateur → Installer VespaTimer'); }
 
 function exportJSON(){ dl(new Blob([JSON.stringify({version:'2.0beta',hornets:hornets,surveyLocation:surveyLocation,inspectorName:inspectorName,notes:notes,personalInfo:personalInfo})],{type:'application/json'}),'vespatimer_beta.json'); }
-function exportPDF(){ var r='RAPPORT VESPATIMER BETA v2.0\n'+new Date().toLocaleString()+'\n\n'; r+='Nom: '+(personalInfo.firstName||'?')+' '+(personalInfo.lastName||'?')+' | Tel: '+(personalInfo.phone||'?')+'\n'; r+='Triangulateur: '+(inspectorName||'?')+'\n'; r+='Pot: '+(surveyLocation.name||'?')+' ('+surveyLocation.lat.toFixed(5)+', '+surveyLocation.lng.toFixed(5)+')\n\n'; for(var i=0;i<hornets.length;i++){ var h=hornets[i],a=getAvg(h),d=getDist(a),n=getNestCoords(h); r+=h.name+': Dir='+h.direction+'° Vols='+h.flights.join(',')+'s Moy='+a.toFixed(1)+'s Dist='+d.toFixed(0)+'m'; if(n) r+=' | Nid: '+n.lat.toFixed(5)+', '+n.lng.toFixed(5); r+='\n'; } navigator.clipboard.writeText(r); alert('✅ Rapport copié. Ctrl+P pour PDF.'); window.print(); }
+function exportPDF(){ 
+    closeModal('exportModal');
+    setTimeout(function(){
+        var r='RAPPORT VESPATIMER BETA v2.0\n'+new Date().toLocaleString()+'\n\n';
+        r+='Nom: '+(personalInfo.firstName||'?')+' '+(personalInfo.lastName||'?')+' | Tel: '+(personalInfo.phone||'?')+'\n';
+        r+='Triangulateur: '+(inspectorName||'?')+'\n';
+        r+='Pot: '+(surveyLocation.name||'?')+' ('+surveyLocation.lat.toFixed(5)+', '+surveyLocation.lng.toFixed(5)+')\n\n';
+        for(var i=0;i<hornets.length;i++){ 
+            var h=hornets[i],a=getAvg(h),d=getDist(a),n=getNestCoords(h); 
+            r+=h.name+': Dir='+h.direction+'° Vols='+h.flights.join(',')+'s Moy='+a.toFixed(1)+'s Dist='+d.toFixed(0)+'m'; 
+            if(n) r+=' | Nid: '+n.lat.toFixed(5)+', '+n.lng.toFixed(5); 
+            r+='\n'; 
+        } 
+        navigator.clipboard.writeText(r); 
+        alert('✅ Rapport copié. Le PDF va s\'ouvrir.');
+        window.print(); 
+    },300);
+}
 function exportGPX(){ var g='<?xml version="1.0"?><gpx version="1.1"><wpt lat="'+surveyLocation.lat+'" lon="'+surveyLocation.lng+'"><name>Pot</name></wpt>'; for(var i=0;i<hornets.length;i++){ var h=hornets[i]; if(!h.flights.length) continue; var d=getDist(getAvg(h)); if(d<=0) continue; var n=getNestCoords(h); if(n) g+='<wpt lat="'+n.lat.toFixed(6)+'" lon="'+n.lng.toFixed(6)+'"><name>'+h.name+'</name></wpt>'; } g+='</gpx>'; dl(new Blob([g],{type:'application/gpx+xml'}),'vespatimer_beta.gpx'); }
 function exportKML(){ var k='<?xml version="1.0"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><Placemark><name>Pot</name><Point><coordinates>'+surveyLocation.lng+','+surveyLocation.lat+',0</coordinates></Point></Placemark>'; for(var i=0;i<hornets.length;i++){ var h=hornets[i]; if(!h.flights.length) continue; var d=getDist(getAvg(h)); if(d<=0) continue; var n=getNestCoords(h); if(n) k+='<Placemark><name>'+h.name+'</name><Point><coordinates>'+n.lng.toFixed(6)+','+n.lat.toFixed(6)+',0</coordinates></Point></Placemark>'; } k+='</Document></kml>'; dl(new Blob([k],{type:'application/vnd.google-earth.kml+xml'}),'vespatimer_beta.kml'); }
 function exportHistory(){ var hist=getHist(); dl(new Blob([JSON.stringify(hist,null,2)],{type:'application/json'}),'vespatimer_history.json'); }
