@@ -266,8 +266,26 @@ function renderAll(){
     saveAll(); if(map) drawAnalysis();
 }
 
-setInterval(function(){ if(hornets.some(function(h){return h.timerRunning})) renderAll(); document.getElementById('datetime').textContent=new Date().toLocaleString(); },500);
-
+setInterval(function(){ 
+    var anyRunning = false;
+    for (var i = 0; i < hornets.length; i++) { 
+        var h = hornets[i];
+        if (h.timerRunning && h.timerStart) { 
+            anyRunning = true;
+            var s = Math.floor((Date.now() - h.timerStart) / 1000);
+            var txt = String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+            var cards = document.querySelectorAll('.hornet-card');
+            if (cards[i]) { 
+                var displays = cards[i].querySelectorAll('.timer-display');
+                for (var d = 0; d < displays.length; d++) { 
+                    displays[d].textContent = txt; 
+                }
+            }
+        }
+    }
+    document.getElementById('liveBanner').style.display = anyRunning ? 'block' : 'none';
+    document.getElementById('datetime').textContent = new Date().toLocaleString(); 
+}, 200);
 if('serviceWorker' in navigator){ var refreshing=false; navigator.serviceWorker.addEventListener('controllerchange',function(){ if(!refreshing){ refreshing=true; window.location.reload(); } }); window.addEventListener('load',function(){ navigator.serviceWorker.register('service-worker.js').catch(function(){}); }); setInterval(function(){ navigator.serviceWorker.getRegistration().then(function(reg){ if(reg) reg.update(); }); },300000); }
 
 function boot(){ loadAll(); applyTranslations(); renderAll(); setTimeout(initMap,500); }
