@@ -70,13 +70,6 @@
 </head>
 <body>
 
-<div id="apkUpdateBanner" style="display:none;background:#d4a853;color:white;padding:10px;text-align:center;font-weight:bold;position:fixed;top:0;left:0;right:0;z-index:99999;">
-    🆕 Nouvelle version disponible ! <a href="vespatimer.apk" download style="color:white;text-decoration:underline;margin-left:8px;">📱 Télécharger</a>
-    <button onclick="this.parentElement.style.display='none'" style="background:white;color:#d4a853;border:none;padding:4px 10px;border-radius:12px;margin-left:8px;cursor:pointer;">✕</button>
-</div>
-
-<div class="beta-banner">⚠️ Ceci est une version bêta...</div>
-
 <div class="beta-banner">⚠️ Ceci est une version bêta/test. Veuillez ne pas utiliser cette version pour votre travail de pot à mèche.</div>
 
 <div class="header"><h1>🐝 VespaTimer <span style="font-size:0.8rem;color:#c47b6b;">β v2.0</span></h1></div>
@@ -141,11 +134,6 @@
 var hornets=[],surveyLocation={lat:46.8,lng:6.8,name:''},inspectorName='',notes='',personalInfo={firstName:'',lastName:'',phone:''},currentLang='fr',map=null,potMarker=null,mapLines=[],collapsedCards={},compassActive=false;
 var COLORS=['#1a1a1a','#c41e3a','#0d6b35','#6b1a8a','#0d4a8c','#e85d04','#7b2d8b','#00a896','#d00000','#3a0ca3','#f48c06','#0077b6','#9d0208'];
 var MAX_HORNETS=13,MAX_HISTORY=200,HISTORY_DAYS=90;
-var currentLang='fr';
-var currentAPKVersion = '2.0';
-var savedAPKVersion = localStorage.getItem('apk_version');
-if (savedAPKVersion && savedAPKVersion !== currentAPKVersion) {
-    document.getElementById('apkUpdateBanner').style.display = 'block';
 }
 localStorage.setItem('apk_version', currentAPKVersion);
 var translations={
