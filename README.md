@@ -40,9 +40,8 @@ Cette version est une **BÊTA**. Ne pas utiliser pour le travail réel de pot-à
 - **Bouton APK** pour téléchargement direct
 
 ### Technique
-- Compatible **PWABuilder** (génération APK)
 - Icône **PNG** pour toutes plateformes
-- Service worker avec **auto-update**
+- Service worker avec **auto-update**(sauf apk)
 - **4 langues** avec dictionnaire complet
 - Stockage isolé (vd_beta5/vh_beta5/vl_beta5)
 - Modification des frelons pendant le chronométrage
