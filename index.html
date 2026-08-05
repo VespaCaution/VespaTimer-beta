@@ -59,7 +59,6 @@
         @media (max-width:400px) { .grid-2{grid-template-columns:1fr} }
         #historyPanel { max-height:250px; overflow-y:auto; display:none; margin-top:10px; background:#f9f4e8; border-radius:14px; padding:8px; }
         .history-item { background:white; padding:10px; border-radius:10px; margin:6px 0; font-size:0.85rem; border-left:4px solid var(--gold); }
-        .history-delete-btn { position:absolute; top:8px; right:8px; background:none; border:none; color:#c47b6b; cursor:pointer; font-size:1rem; }
         .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center; }
         .modal { background:white; border-radius:20px; padding:20px; max-width:550px; width:90%; max-height:80vh; overflow-y:auto; position:relative; }
         .modal-close { position:absolute; top:10px; right:14px; font-size:1.5rem; cursor:pointer; background:none; border:none; z-index:10001; }
@@ -138,7 +137,7 @@
         <h2>⚙️ <span data-lang="options">Options</span></h2>
         <div style="display:flex;flex-direction:column;gap:10px;">
             <p><strong data-lang="language">Langue:</strong> 
-                <select onchange="changeLanguage(this.value)" style="width:auto;">
+                <select id="langSelectModal" onchange="changeLanguage(this.value)" style="width:auto;">
                     <option value="fr">🇫🇷 Français</option><option value="en">🇬🇧 English</option><option value="de">🇩🇪 Deutsch</option><option value="it">🇮🇹 Italiano</option>
                 </select>
             </p>
@@ -177,18 +176,18 @@
         <button class="modal-close" onclick="closeModal('exportModal')">✕</button>
         <h2>📤 <span data-lang="export_import">Export / Import</span></h2>
         <div style="display:flex;flex-direction:column;gap:8px;">
-            <button class="btn-grey" onclick="exportJSON();closeModal('exportModal')">📤 JSON</button>
-            <button class="btn-grey" onclick="exportPDF();closeModal('exportModal')">📄 PDF</button>
-            <button class="btn-grey" onclick="exportGPX();closeModal('exportModal')">📍 GPX</button>
-            <button class="btn-grey" onclick="exportKML();closeModal('exportModal')">🌍 KML</button>
-            <button class="btn-grey" onclick="exportHistory();closeModal('exportModal')">📋 <span data-lang="export_history">Exporter historique</span></button>
+            <button class="btn-grey" onclick="exportJSON()">📤 JSON</button>
+            <button class="btn-grey" onclick="exportPDF()">📄 PDF</button>
+            <button class="btn-grey" onclick="exportGPX()">📍 GPX</button>
+            <button class="btn-grey" onclick="exportKML()">🌍 KML</button>
+            <button class="btn-grey" onclick="exportHistory()">📋 <span data-lang="export_history">Exporter historique</span></button>
             <hr>
             <button class="btn-gold" onclick="document.getElementById('importFile').click()">📥 <span data-lang="import_btn">Importer</span></button>
             <button class="btn-gold" onclick="document.getElementById('importHistFile').click()">📋 <span data-lang="import_history">Importer historique</span></button>
             <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
             <input type="file" id="importHistFile" accept=".json" style="display:none;" onchange="importHistory(event)">
             <hr>
-            <button class="btn-red" onclick="resetAll();closeModal('exportModal')">🔄 <span data-lang="reset_btn">Nouveau</span></button>
+            <button class="btn-red" onclick="resetAll()">🔄 <span data-lang="reset_btn">Nouveau</span></button>
         </div>
     </div>
 </div>
@@ -269,7 +268,7 @@ var translations = {
         pot_popup:'Pot-à-Mèche',oval_tooltip:'Ovale: 200m×100m',
     },
     en: {
-        personal_info:'Personal Info',first_name_placeholder:'First Name',last_name_placeholder:'📞 Phone',
+        personal_info:'Personal Info',first_name_placeholder:'First Name',last_name_placeholder:'Last Name',phone_placeholder:'📞 Phone',
         pot_label:'Pot-à-Mèche',location_placeholder:'Location or lat,lng',save_btn:'Save',inspector_placeholder:'👤 Inspector',
         notes_placeholder:'📝 Notes...',timer_active:'Timer active',hornets_title:'Hornets',add_hornet:'Add hornet',
         map_title:'Triangulation',gps_btn:'GPS',manual_coords:'Coord.',history_btn:'History 90d',clear_map:'Clear',
@@ -344,7 +343,7 @@ var translations = {
 
 function t(key) { return (translations[currentLang] && translations[currentLang][key]) || key; }
 function applyTranslations() { var els=document.querySelectorAll('[data-lang]'); for(var i=0;i<els.length;i++) els[i].textContent=t(els[i].getAttribute('data-lang')); var phs=document.querySelectorAll('[data-lang-placeholder]'); for(var j=0;j<phs.length;j++) phs[j].placeholder=t(phs[j].getAttribute('data-lang-placeholder')); }
-function changeLanguage(lang) { currentLang=lang; localStorage.setItem('vl_beta',lang); applyTranslations(); renderAll(); if(map) drawAnalysis(); }
+function changeLanguage(lang) { currentLang=lang; localStorage.setItem('vl_beta',lang); document.getElementById('langSelectModal').value=lang; applyTranslations(); renderAll(); if(map) drawAnalysis(); }
 
 // ============ HORNETS ============
 function createHornet(name) { return { id:Date.now()+Math.random(), name:name||'Frelon 1', direction:0, flights:[], timerRunning:false, timerStart:null, elapsedSeconds:0 }; }
@@ -356,7 +355,7 @@ function createOval(center,dirDeg){ var pts=[]; var hw=100,hh=50; var dirRad=(di
 
 // ============ STORAGE ============
 function saveAll() { try { localStorage.setItem('vd_beta',JSON.stringify({ hornets:hornets, surveyLocation:surveyLocation, inspectorName:inspectorName, notes:notes, personalInfo:personalInfo, collapsedCards:collapsedCards })); } catch(e){} }
-function loadAll() { try { var d=JSON.parse(localStorage.getItem('vd_beta')); if(d){ if(d.hornets)hornets=d.hornets; if(d.surveyLocation)surveyLocation=d.surveyLocation; inspectorName=d.inspectorName||''; notes=d.notes||''; if(d.personalInfo)personalInfo=d.personalInfo; if(d.collapsedCards)collapsedCards=d.collapsedCards; } } catch(e){} var sl=localStorage.getItem('vl_beta'); if(sl&&translations[sl])currentLang=sl; document.getElementById('firstName').value=personalInfo.firstName||''; document.getElementById('lastName').value=personalInfo.lastName||''; document.getElementById('phone').value=personalInfo.phone||''; if(!hornets.length) hornets.push(createHornet('Frelon 1')); }
+function loadAll() { try { var d=JSON.parse(localStorage.getItem('vd_beta')); if(d){ if(d.hornets)hornets=d.hornets; if(d.surveyLocation)surveyLocation=d.surveyLocation; inspectorName=d.inspectorName||''; notes=d.notes||''; if(d.personalInfo)personalInfo=d.personalInfo; if(d.collapsedCards)collapsedCards=d.collapsedCards; } } catch(e){} var sl=localStorage.getItem('vl_beta'); if(sl&&translations[sl]){currentLang=sl;document.getElementById('langSelectModal').value=sl;} document.getElementById('firstName').value=personalInfo.firstName||''; document.getElementById('lastName').value=personalInfo.lastName||''; document.getElementById('phone').value=personalInfo.phone||''; if(!hornets.length) hornets.push(createHornet('Frelon 1')); }
 function saveHist() { if(!hornets.some(function(h){return h.flights.length>0})) return; var hist=[]; try { hist=JSON.parse(localStorage.getItem('vh_beta')||'[]'); } catch(e){} for(var i=0;i<hornets.length;i++){ var h=hornets[i]; if(!h.flights.length) continue; hist.push({ date:new Date().toISOString(), location:{lat:surveyLocation.lat,lng:surveyLocation.lng,name:surveyLocation.name}, hornet:{name:h.name,direction:h.direction,flights:h.flights.slice()}, notes:notes, inspectorName:inspectorName }); } if(hist.length>MAX_HISTORY) hist=hist.slice(-MAX_HISTORY); var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; hist=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); try { localStorage.setItem('vh_beta',JSON.stringify(hist)); } catch(e){} }
 function getHist() { try { return JSON.parse(localStorage.getItem('vh_beta')||'[]'); } catch(e){ return[]; } }
 function deleteHistEntry(index) { var hist=getHist(); hist.splice(index,1); localStorage.setItem('vh_beta',JSON.stringify(hist)); showHistory(); }
@@ -364,7 +363,7 @@ function resumeHistEntry(entry) { surveyLocation=entry.location; inspectorName=e
 
 // ============ MODALS ============
 function openModal(id) { document.getElementById(id).style.display='flex'; }
-function closeModal(id) { document.getElementById(id).style.display='none'; }
+function closeModal(id) { document.getElementById(id).style.display='none'; if(id==='compassModal') stopCompass(); }
 
 // ============ COMPASS ============
 function openCompassModal() { openModal('compassModal'); startCompass(); }
@@ -414,7 +413,7 @@ function drawAnalysis(histData){
     document.getElementById('predictionPanel').innerHTML=preds.length?'🔍 '+preds.map(function(p){return p.name+' → ~'+p.dist.toFixed(0)+'m'}).join(' · '):'⚠️ '+t('no_flights');
 }
 
-function showHistory(){ var hist=getHist(); var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; var recent=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); drawAnalysis(recent); var panel=document.getElementById('historyPanel'); panel.style.display='block'; panel.innerHTML='<div style="font-size:0.8rem;color:#c47b6b;margin-bottom:8px;">'+t('history_limit')+' ('+revar cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; var recent=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); drawAnalysis(recent); var panel=document.getElementById('historyPanel'); panel.style.display='block'; panel.innerHTML='<div style="font-size:0.8rem;color:#c47b6b;margin-bottom:8px;">'+t('history_limit')+' ('+recent.length+'/'+MAX_HISTORY+')</div>'; panel.innerHTML+=recent.length?recent.reverse().map(function(e,i){ return '<div class="history-item"><strong>📅 '+new Date(e.date).toLocaleDateString()+'</strong><br>🐝 '+(e.hornet?e.hornet.name:'?')+' | 🧭 '+(e.hornet?e.hornet.direction:'?')+'° | ⏱️ '+(e.hornet&&e.hornet.flights?e.hornet.flights.length:0)+' vols<br>📍 '+(e.location?e.location.name||e.location.lat.toFixed(4)+', '+e.location.lng.toFixed(4):'?')+'<div class="history-actions"><button class="btn-gold btn-sm" onclick="resumeHistEntry(getHist()['+i+'])">🔄 '+t('hist_resume')+'</button><button class="btn-red btn-sm" onclick="deleteHistEntry('+i+')">🗑️ '+t('hist_delete')+'</button></div></div>'; }).join(''):'<div class="history-item">📭 '+t('history_empty')+'</div>'; }
+function showHistory(){ var hist=getHist(); var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; var recent=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); drawAnalysis(recent); var panel=document.getElementById('historyPanel'); panel.style.display='block'; panel.innerHTML='<div style="font-size:0.8rem;color:#c47b6b;margin-bottom:8px;">'+t('history_limit')+' ('+recent.length+'/'+MAX_HISTORY+')</div>'; panel.innerHTML+=recent.length?recent.reverse().map(function(e,i){return '<div class="history-item"><strong>📅 '+new Date(e.date).toLocaleDateString()+'</strong><br>🐝 '+(e.hornet?e.hornet.name:'?')+' | 🧭 '+(e.hornet?e.hornet.direction:'?')+'° | ⏱️ '+(e.hornet&&e.hornet.flights?e.hornet.flights.length:0)+' vols<br>📍 '+(e.location?e.location.name||e.location.lat.toFixed(4)+', '+e.location.lng.toFixed(4):'?')+'<div class="history-actions"><button class="btn-gold btn-sm" onclick="resumeHistEntry(getHist()['+i+'])">🔄 '+t('hist_resume')+'</button><button class="btn-red btn-sm" onclick="deleteHistEntry('+i+')">🗑️ '+t('hist_delete')+'</button></div></div>'; }).join(''):'<div class="history-item">📭 '+t('history_empty')+'</div>'; }
 
 // ============ PWA INSTALL ============
 var deferredPrompt;
@@ -483,7 +482,6 @@ setInterval(function(){ if(hornets.some(function(h){return h.timerRunning})) ren
 // ============ BOOT ============
 function boot(){ loadAll(); applyTranslations(); renderAll(); setTimeout(initMap,500); }
 if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',boot); } else { boot(); }
-document.querySelectorAll('.modal-overlay').forEach(function(m){ m.addEventListener('click',function(e){ if(e.target===this) this.style.display='none'; }); });
 </script>
 </body>
 </html>
