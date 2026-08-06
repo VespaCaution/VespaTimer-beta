@@ -213,7 +213,7 @@ function renderAll(){
         var flightsHtml='—';
         if(fc){ var fs=[]; for(var fi=0;fi<h.flights.length;fi++){ fs.push('<span class="flight-item">'+h.flights[fi]+'s <button class="flight-delete-btn" onclick="event.stopPropagation();deleteFlight('+h.id+','+fi+')">✕</button></span>'); } flightsHtml=fs.join(' '); }
 
-        html+='<div class="hornet-card'+(isCollapsed?' collapsed-card':'')+'" style="border-left:6px solid '+COLORS[idx%COLORS.length]+';">';
+        html+='<div class="hornet-card'+(isCollapsed?' collapsed-card':'')+'" style="border-left:12px solid '+COLORS[idx%COLORS.length]+';">';
         html+='<div class="hornet-header" onclick="toggleCollapse('+h.id+')">';
         html+='<div style="display:flex;justify-content:space-between;align-items:center;width:100%;flex-wrap:wrap;gap:8px;">';
         html+='<input class="hornet-name-input" value="'+h.name+'" style="color:'+COLORS[idx%COLORS.length]+';" onclick="event.stopPropagation()" onchange="updateName('+h.id+',this.value)">';
