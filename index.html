@@ -331,6 +331,19 @@ if('serviceWorker' in navigator){ var refreshing=false; navigator.serviceWorker.
 
 function boot(){ loadAll(); renderAll(); setTimeout(initMap,500); }
 if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',boot); } else { boot(); }
+function boot(){ 
+    loadAll(); 
+    renderAll(); 
+    setTimeout(initMap,500); 
+    // Show install button on Apple
+    var isApple=/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent);
+    if(isApple){ 
+        setTimeout(function(){
+            var btn = document.getElementById('installBtn2');
+            if(btn) btn.style.display = 'block';
+        }, 2000);
+    }
+}
 </script>
 </body>
 </html>
