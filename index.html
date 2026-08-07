@@ -155,7 +155,9 @@ function handleOrientation(e){
 }
 function drawGraduations(){ var g=document.getElementById('compassGraduations'); if(!g) return; var html=''; for(var i=0;i<360;i++){ var angle=i*Math.PI/180; var innerR=i%10===0?125:130; var outerR=145; var x1=150+innerR*Math.sin(angle); var y1=150-innerR*Math.cos(angle); var x2=150+outerR*Math.sin(angle); var y2=150-outerR*Math.cos(angle); var stroke=i%10===0?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.2)'; var sw=i%10===0?2:1; html+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>'; if(i%30===0){ var lx=150+108*Math.sin(angle); var ly=150-108*Math.cos(angle); html+='<text x="'+lx+'" y="'+ly+'" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="middle" dominant-baseline="middle">'+i+'°</text>'; } } g.innerHTML=html; }
 function startCompass(){ 
-    compassActive=true; 
+    compassActive=true;
+document.getElementById('compassNeedle').style.transform='rotate(0deg)';
+document.getElementById('compassDirection').textContent='--°';
     // iOS 13+ requires permission
     if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
         DeviceOrientationEvent.requestPermission().then(function(state){
