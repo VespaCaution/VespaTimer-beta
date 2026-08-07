@@ -140,14 +140,17 @@ function closeModal(id){ document.getElementById(id).style.display='none'; if(id
 function openCompassModal(){ openModal('compassModal'); startCompass(); setTimeout(drawGraduations,100); }function stopCompass(){ compassActive=false; window.removeEventListener('deviceorientation',handleOrientation); }
 function handleOrientation(e){ 
     if(!compassActive) return; 
-    var heading;
-    if(e.webkitCompassHeading !== undefined){
+    var heading = 0;
+    
+    // Apple iOS - uses webkitCompassHeading
+    if(e.webkitCompassHeading !== undefined && e.webkitCompassHeading >= 0 && e.webkitCompassHeading <= 360){
         heading = e.webkitCompassHeading;
-    } else if(e.alpha !== null){
-        heading = 360 - e.alpha;
-    } else {
-        heading = 0;
+    } 
+    // Android - uses alpha
+    else if(e.alpha !== null && e.alpha !== undefined){
+        heading = (360 - e.alpha) % 360;
     }
+    
     heading = Math.round(heading) % 360;
     var needle=document.getElementById('compassNeedle'); 
     if(needle) needle.style.transform='rotate('+heading+'deg)'; 
