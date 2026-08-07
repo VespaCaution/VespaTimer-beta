@@ -155,41 +155,44 @@ function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; if(id==='compassModal') stopCompass(); }
 
 function openCompassModal(){ openModal('compassModal'); startCompass(); setTimeout(drawGraduations,100); }
-function startCompass(){
-firstReading=true;
+function startCompass(){ 
     compassActive=true; 
     document.getElementById('compassNeedle').style.display='none';
-    document.getElementById('compassDirection').textContent='--°'; 
-    if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
-        DeviceOrientationEvent.requestPermission().then(function(state){
-            if(state==='granted'){ window.addEventListener('deviceorientation',handleOrientation,true); } 
-            else { document.getElementById('compassDirection').textContent='Permission refusée'; }
-        }).catch(function(){ document.getElementById('compassDirection').textContent='Non supporté'; });
+    document.getElementById('compassDirection').textContent='--°';
+    if('AbsoluteOrientationSensor' in window){
+        try{
+            var sensor=new AbsoluteOrientationSensor({frequency:60,referenceFrame:'screen'});
+            sensor.addEventListener('reading',function(){
+                if(!compassActive) return;
+                var q=sensor.quaternion;
+                var heading=Math.atan2(2*q[0]*q[1]+2*q[2]*q[3],1-2*q[1]*q[1]-2*q[2]*q[2]);
+                heading=((heading*(180/Math.PI))+360)%360;
+                heading=Math.round(heading);
+                var needle=document.getElementById('compassNeedle');
+                if(needle){ needle.style.display='block'; needle.style.transform='rotate('+heading+'deg)'; }
+                document.getElementById('compassDirection').textContent=heading+'°';
+            });
+            sensor.addEventListener('error',function(){ document.getElementById('compassDirection').textContent='Erreur capteur'; });
+            sensor.start();
+        }catch(e){ document.getElementById('compassDirection').textContent='Non supporté'; }
     } else if(window.DeviceOrientationEvent){ 
         window.addEventListener('deviceorientation',handleOrientation,true); 
     } else { 
         document.getElementById('compassDirection').textContent='Non supporté'; 
     } 
 }
-function stopCompass(){ compassActive=false; window.removeEventListener('deviceorientation',handleOrientation,true); }
-var firstReading=true;
 function handleOrientation(e){ 
     if(!compassActive) return; 
-    if(firstReading){ firstReading=false; return; } // Skip first reading
     var heading=0; 
-    if(e.webkitCompassHeading!==undefined&&e.webkitCompassHeading!==null&&e.webkitCompassHeading>=0){ 
-        heading=e.webkitCompassHeading; 
-    } else if(e.alpha!==null&&e.alpha!==undefined){ 
-        heading=e.alpha; 
-    } 
+    if(e.webkitCompassHeading!==undefined&&e.webkitCompassHeading!==null){ heading=e.webkitCompassHeading; } 
+    else if(e.alpha!==null&&e.alpha!==undefined){ heading=360-e.alpha; }
     heading=Math.round(heading)%360; 
     var needle=document.getElementById('compassNeedle'); 
-    if(needle){ 
-        needle.style.display='block';
-        needle.style.transform='rotate('+heading+'deg)'; 
-    }
+    if(needle){ needle.style.display='block'; needle.style.transform='rotate('+heading+'deg)'; }
     document.getElementById('compassDirection').textContent=heading+'°'; 
 }
+
+function stopCompass(){ compassActive=false; window.removeEventListener('deviceorientation',handleOrientation,true); }
 function drawGraduations(){ var g=document.getElementById('compassGraduations'); if(!g) return; var html=''; for(var i=0;i<360;i++){ var angle=i*Math.PI/180; var innerR=i%10===0?125:130; var outerR=145; var x1=150+innerR*Math.sin(angle); var y1=150-innerR*Math.cos(angle); var x2=150+outerR*Math.sin(angle); var y2=150-outerR*Math.cos(angle); var stroke=i%10===0?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.2)'; var sw=i%10===0?2:1; html+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>'; if(i%30===0){ var lx=150+108*Math.sin(angle); var ly=150-108*Math.cos(angle); html+='<text x="'+lx+'" y="'+ly+'" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="middle" dominant-baseline="middle">'+i+'°</text>'; } } g.innerHTML=html; }
 
 function toggleCollapse(id){ collapsedCards[id]=!
