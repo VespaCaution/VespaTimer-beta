@@ -138,11 +138,35 @@ function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; if(id==='compassModal') stopCompass(); }
 
 function openCompassModal(){ openModal('compassModal'); startCompass(); setTimeout(drawGraduations,100); }
-function startCompass(){ compassActive=true; if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){ DeviceOrientationEvent.requestPermission().then(function(state){ if(state==='granted'){ window.addEventListener('deviceorientation',handleOrientation); } else { document.getElementById('compassDirection').textContent='Permission refusée'; } }).catch(function(){ document.getElementById('compassDirection').textContent='Non supporté'; }); } else if(window.DeviceOrientationEvent){ window.addEventListener('deviceorientation',handleOrientation); } else { document.getElementById('compassDirection').textContent='Non supporté'; } }
+
 function stopCompass(){ compassActive=false; window.removeEventListener('deviceorientation',handleOrientation); }
 function handleOrientation(e){ if(!compassActive) return; var heading=e.webkitCompassHeading||Math.abs(e.alpha-360)||0; var needle=document.getElementById('compassNeedle'); if(needle) needle.style.transform='rotate('+heading+'deg)'; document.getElementById('compassDirection').textContent=Math.round(heading)+'°'; }
 function drawGraduations(){ var g=document.getElementById('compassGraduations'); if(!g) return; var html=''; for(var i=0;i<360;i++){ var angle=i*Math.PI/180; var innerR=i%10===0?125:130; var outerR=145; var x1=150+innerR*Math.sin(angle); var y1=150-innerR*Math.cos(angle); var x2=150+outerR*Math.sin(angle); var y2=150-outerR*Math.cos(angle); var stroke=i%10===0?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.2)'; var sw=i%10===0?2:1; html+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>'; if(i%30===0){ var lx=150+108*Math.sin(angle); var ly=150-108*Math.cos(angle); html+='<text x="'+lx+'" y="'+ly+'" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="middle" dominant-baseline="middle">'+i+'°</text>'; } } g.innerHTML=html; }
-
+function startCompass(){ 
+    compassActive=true; 
+    // iOS 13+ requires permission
+    if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
+        DeviceOrientationEvent.requestPermission().then(function(state){
+            if(state==='granted'){ 
+                window.addEventListener('deviceorientation', handleOrientation); 
+                document.getElementById('compassDirection').textContent='--°';
+            } else { 
+                document.getElementById('compassDirection').textContent='Permission refusée'; 
+            }
+        }).catch(function(){ 
+            document.getElementById('compassDirection').textContent='Non supporté'; 
+        });
+    } 
+    // Android and older iOS (works immediately)
+    else if('ondeviceorientationabsolute' in window || 'DeviceOrientationEvent' in window){
+        window.addEventListener('deviceorientation', handleOrientation);
+        document.getElementById('compassDirection').textContent='--°';
+    } 
+    // No compass at all
+    else { 
+        document.getElementById('compassDirection').textContent='Non supporté'; 
+    } 
+}
 function toggleCollapse(id){ collapsedCards[id]=!collapsedCards[id]; saveAll(); renderAll(); if(map)drawAnalysis(); }
 function toggleTimer(id){ var h=hornets.find(function(x){return x.id===id}); if(!h) return; if(h.timerRunning){ stopTimer(id); } else { startTimer(id); } }
 function startTimer(id){ var h=hornets.find(function(x){return x.id===id}); if(!h||h.timerRunning||h.flights.length>=5) return; h.timerRunning=true; h.timerStart=Date.now()-(h.elapsedSeconds*1000); renderAll(); }
@@ -186,7 +210,19 @@ function showHistory(){ var hist=getHist(); var cutoff=Date.now()-HISTORY_DAYS*2
 
 var deferredPrompt;
 window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); deferredPrompt=e; document.getElementById('installBtn2').style.display='block'; });
-function installPWA(){ if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(function(r){ deferredPrompt=null; }); } else { installPWAFallback(); } }
+function installPWA(){ 
+    var isApple=/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent) && /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+    
+    if(isApple){ 
+        alert('📱 Sur Apple: Dans Safari, appuyez sur le bouton Partager (carré avec flèche) et choisissez "Sur l\'écran d\'accueil" ou "Ajouter au Dock"'); 
+        return;
+    }
+    
+    if(deferredPrompt){ 
+        deferredPrompt.prompt(); 
+        deferredPrompt.userChoice.then(function(result){ deferredPrompt=null; }); 
+    }
+    }
 function installPWAFallback(){ var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent); if(isIOS){ alert('📱 iOS: Dans Safari, appuyez sur le bouton Partager (carré avec flèche) en bas de l\'écran, puis faites défiler et choisissez "Sur l\'écran d\'accueil"'); } else { alert('📱 Android: Menu Chrome → Installer l\'application\n💻 PC: Menu navigateur → Installer VespaTimer'); } }
 function downloadAPK(){ window.location.href='vespatimer.apk'; }
 
@@ -213,7 +249,7 @@ function renderAll(){
         var flightsHtml='—';
         if(fc){ var fs=[]; for(var fi=0;fi<h.flights.length;fi++){ fs.push('<span class="flight-item">'+h.flights[fi]+'s <button class="flight-delete-btn" onclick="event.stopPropagation();deleteFlight('+h.id+','+fi+')">✕</button></span>'); } flightsHtml=fs.join(' '); }
 
-        html+='<div class="hornet-card'+(isCollapsed?' collapsed-card':'')+'" style="border-left:12px solid '+COLORS[idx%COLORS.length]+';">';
+        html+='<div class="hornet-card'+(isCollapsed?' collapsed-card':'')+'" style="border-left:18px solid '+COLORS[idx%COLORS.length]+';">';
         html+='<div class="hornet-header" onclick="toggleCollapse('+h.id+')">';
         html+='<div style="display:flex;justify-content:space-between;align-items:center;width:100%;flex-wrap:wrap;gap:8px;">';
         html+='<input class="hornet-name-input" value="'+h.name+'" style="color:'+COLORS[idx%COLORS.length]+';" onclick="event.stopPropagation()" onchange="updateName('+h.id+',this.value)">';
