@@ -141,18 +141,19 @@ function loadAll(){ try { var d=JSON.parse(localStorage.getItem('vd_beta10')); i
 function getHist(){ try { return JSON.parse(localStorage.getItem('vh_beta10')||'[]'); } catch(e){ return[]; } }
 function deleteHistEntry(index){ var hist=getHist(); hist.splice(index,1); localStorage.setItem('vh_beta10',JSON.stringify(hist)); showHistory(); }
 function resumeHistEntry(entry){ surveyLocation=entry.location; inspectorName=entry.inspectorName||''; notes=entry.notes||''; if(entry.hornets&&entry.hornets.length>0){ hornets=entry.hornets.map(function(h){ var nh=createHornet(h.name||'Frelon'); nh.direction=h.direction||0; nh.flights=h.flights||[]; return nh; }); } updatePotMarker(); renderAll(); currentSessionSaved=false; alert('✅ Pot-à-Mèche repris !'); }
-var currentSessionSaved=false;
+var saveHistTimeout=null;
 function saveHist(){ 
-    if(!hornets.some(function(h){return h.flights.length>0})) return; 
-    if(currentSessionSaved) return;
-    currentSessionSaved=true;
-    var hist=[]; 
-    try { hist=JSON.parse(localStorage.getItem('vh_beta10')||'[]'); } catch(e){} 
-    hist.push({date:new Date().toISOString(),location:{lat:surveyLocation.lat,lng:surveyLocation.lng,name:surveyLocation.name},hornets:hornets.filter(function(h){return h.flights.length>0}).map(function(h){return {name:h.name,direction:h.direction,flights:h.flights.slice()};}),notes:notes,inspectorName:inspectorName});
-    if(hist.length>MAX_HISTORY) hist=hist.slice(-MAX_HISTORY); 
-    var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; 
-    hist=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); 
-    try { localStorage.setItem('vh_beta10',JSON.stringify(hist)); } catch(e){} 
+    if(!hornets.some(function(h){return h.flights.length>0})) return;
+    if(saveHistTimeout) clearTimeout(saveHistTimeout);
+    saveHistTimeout=setTimeout(function(){
+        var hist=[]; 
+        try { hist=JSON.parse(localStorage.getItem('vh_beta10')||'[]'); } catch(e){} 
+        hist.push({date:new Date().toISOString(),location:{lat:surveyLocation.lat,lng:surveyLocation.lng,name:surveyLocation.name},hornets:hornets.filter(function(h){return h.flights.length>0}).map(function(h){return {name:h.name,direction:h.direction,flights:h.flights.slice()};}),notes:notes,inspectorName:inspectorName});
+        if(hist.length>MAX_HISTORY) hist=hist.slice(-MAX_HISTORY); 
+        var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; 
+        hist=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); 
+        try { localStorage.setItem('vh_beta10',JSON.stringify(hist)); } catch(e){} 
+    },2000);
 }
 function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; if(id==='compassModal') stopCompass(); }
