@@ -229,8 +229,21 @@ var deferredPrompt;
 window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); deferredPrompt=e; document.getElementById('installBtn2').style.display='block'; });
 function installPWA(){ 
     var isApple=/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent) && /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+ window.addEventListener('beforeinstallprompt',function(e){ 
+    e.preventDefault(); 
+    deferredPrompt=e; 
+    document.getElementById('installBtn2').style.display='block'; 
+});
+
+// Force show button on Apple devices
+var isApple=/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent);
+if(isApple){ 
+    setTimeout(function(){
+        document.getElementById('installBtn2').style.display='block';
+    }, 1000);
+}   
     
-    if(isApple){ 
+if(isApple){ 
         alert('📱 Sur Apple: Dans Safari, appuyez sur le bouton Partager (carré avec flèche) et choisissez "Sur l\'écran d\'accueil" ou "Ajouter au Dock"'); 
         return;
     }
