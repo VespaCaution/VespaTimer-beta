@@ -141,19 +141,15 @@ function loadAll(){ try { var d=JSON.parse(localStorage.getItem('vd_beta10')); i
 function getHist(){ try { return JSON.parse(localStorage.getItem('vh_beta10')||'[]'); } catch(e){ return[]; } }
 function deleteHistEntry(index){ var hist=getHist(); hist.splice(index,1); localStorage.setItem('vh_beta10',JSON.stringify(hist)); showHistory(); }
 function resumeHistEntry(entry){ surveyLocation=entry.location; inspectorName=entry.inspectorName||''; notes=entry.notes||''; if(entry.hornets&&entry.hornets.length>0){ hornets=entry.hornets.map(function(h){ var nh=createHornet(h.name||'Frelon'); nh.direction=h.direction||0; nh.flights=h.flights||[]; return nh; }); } updatePotMarker(); renderAll(); currentSessionSaved=false; alert('✅ Pot-à-Mèche repris !'); }
-var saveHistTimeout=null;
 function saveHist(){ 
     if(!hornets.some(function(h){return h.flights.length>0})) return;
-    if(saveHistTimeout) clearTimeout(saveHistTimeout);
-    saveHistTimeout=setTimeout(function(){
-        var hist=[]; 
-        try { hist=JSON.parse(localStorage.getItem('vh_beta10')||'[]'); } catch(e){} 
-        hist.push({date:new Date().toISOString(),location:{lat:surveyLocation.lat,lng:surveyLocation.lng,name:surveyLocation.name},hornets:hornets.filter(function(h){return h.flights.length>0}).map(function(h){return {name:h.name,direction:h.direction,flights:h.flights.slice()};}),notes:notes,inspectorName:inspectorName});
-        if(hist.length>MAX_HISTORY) hist=hist.slice(-MAX_HISTORY); 
-        var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; 
-        hist=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); 
-        try { localStorage.setItem('vh_beta10',JSON.stringify(hist)); } catch(e){} 
-    },2000);
+    var hist=[]; 
+    try { hist=JSON.parse(localStorage.getItem('vh_beta10')||'[]'); } catch(e){} 
+    hist.push({date:new Date().toISOString(),location:{lat:surveyLocation.lat,lng:surveyLocation.lng,name:surveyLocation.name},hornets:hornets.filter(function(h){return h.flights.length>0}).map(function(h){return {name:h.name,direction:h.direction,flights:h.flights.slice()};}),notes:notes,inspectorName:inspectorName});
+    if(hist.length>MAX_HISTORY) hist=hist.slice(-MAX_HISTORY); 
+    var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; 
+    hist=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); 
+    try { localStorage.setItem('vh_beta10',JSON.stringify(hist)); } catch(e){} 
 }
 function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; if(id==='compassModal') stopCompass(); }
@@ -168,10 +164,10 @@ function toggleCollapse(id){ collapsedCards[id]=!
 collapsedCards[id]; saveAll(); renderAll(); if(map)drawAnalysis(); }
 function toggleTimer(id){ var h=hornets.find(function(x){return x.id===id}); if(!h) return; if(h.timerRunning){ stopTimer(id); } else { startTimer(id); } }
 function startTimer(id){ var h=hornets.find(function(x){return x.id===id}); if(!h||h.timerRunning||h.flights.length>=5) return; h.timerRunning=true; h.timerStart=Date.now()-(h.elapsedSeconds*1000); renderAll(); }
-function stopTimer(id){ var h=hornets.find(function(x){return x.id===id}); if(!h||!h.timerRunning) return; var elapsed=Math.floor((Date.now()-h.timerStart)/1000); h.timerRunning=false; h.timerStart=null; if(elapsed>0){ h.flights.push(elapsed); if(h.flights.length>5) h.flights.shift(); } h.elapsedSeconds=0; saveHist(); renderAll(); }
+function stopTimer(id){ var h=hornets.find(function(x){return x.id===id}); if(!h||!h.timerRunning) return; var elapsed=Math.floor((Date.now()-h.timerStart)/1000); h.timerRunning=false; h.timerStart=null; if(elapsed>0){ h.flights.push(elapsed); if(h.flights.length>5) h.flights.shift(); } h.elapsedSeconds=0; renderAll(); }
 function resetTimer(id){ var h=hornets.find(function(x){return x.id===id}); if(!h) return; h.timerRunning=false; h.timerStart=null; h.elapsedSeconds=0; renderAll(); }
 function deleteFlight(hid,idx){ var h=hornets.find(function(x){return x.id===hid}); if(!h||idx<0||idx>=h.flights.length) return; h.flights.splice(idx,1); renderAll(); }
-function addManualTime(id){ var h=hornets.find(function(x){return x.id===id}); if(!h||h.flights.length>=5) return; var inp=document.getElementById('mt_'+id); if(!inp) return; var v=parseInt(inp.value); if(isNaN(v)||v<=0){ alert('Temps invalide'); return; } h.flights.push(v); if(h.flights.length>5) h.flights.shift(); inp.value=''; saveHist(); renderAll(); }
+function addManualTime(id){ var h=hornets.find(function(x){return x.id===id}); if(!h||h.flights.length>=5) return; var inp=document.getElementById('mt_'+id); if(!inp) return; var v=parseInt(inp.value); if(isNaN(v)||v<=0){ alert('Temps invalide'); return; } h.flights.push(v); if(h.flights.length>5) h.flights.shift(); inp.value=''; renderAll(); }
 function deleteHornet(id){ if(hornets.length<=1){ alert('Gardez au moins un frelon.'); return; } hornets=hornets.filter(function(x){return x.id!==id}); delete collapsedCards[id]; renderAll(); }
 function updateDir(id,val){ var h=hornets.find(function(x){return x.id===id}); if(!h) return; h.direction=Math.min(359,Math.max(0,parseInt(val)||0)); saveAll(); if(map) drawAnalysis(); }
 function updateName(id,val){ var h=hornets.find(function(x){return x.id===id}); if(!h) return; h.name=val||'Frelon'; saveAll(); }
