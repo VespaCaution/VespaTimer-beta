@@ -129,11 +129,45 @@ function dl(b,n){ var a=document.createElement('a'); a.href=URL.createObjectURL(
 
 function saveAll(){ try { localStorage.setItem('vd_beta8',JSON.stringify({hornets:hornets,surveyLocation:surveyLocation,inspectorName:inspectorName,notes:notes,personalInfo:personalInfo,collapsedCards:collapsedCards})); } catch(e){} }
 function loadAll(){ try { var d=JSON.parse(localStorage.getItem('vd_beta8')); if(d){ if(d.hornets)hornets=d.hornets; if(d.surveyLocation)surveyLocation=d.surveyLocation; inspectorName=d.inspectorName||''; notes=d.notes||''; if(d.personalInfo)personalInfo=d.personalInfo; if(d.collapsedCards)collapsedCards=d.collapsedCards; } } catch(e){} var sl=localStorage.getItem('vl_beta8'); if(sl) currentLang=sl; document.getElementById('langSelectModal').value=currentLang; document.getElementById('firstName').value=personalInfo.firstName||''; document.getElementById('lastName').value=personalInfo.lastName||''; document.getElementById('phone').value=personalInfo.phone||''; if(!hornets.length) hornets.push(createHornet('Frelon 1')); }
-function saveHist(){ if(!hornets.some(function(h){return h.flights.length>0})) return; var hist=[]; try { hist=JSON.parse(localStorage.getItem('vh_beta8')||'[]'); } catch(e){} for(var i=0;i<hornets.length;i++){ var h=hornets[i]; if(!h.flights.length) continue; hist.push({date:new Date().toISOString(),location:{lat:surveyLocation.lat,lng:surveyLocation.lng,name:surveyLocation.name},hornet:{name:h.name,direction:h.direction,flights:h.flights.slice()},notes:notes,inspectorName:inspectorName}); } if(hist.length>MAX_HISTORY) hist=hist.slice(-MAX_HISTORY); var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; hist=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); try { localStorage.setItem('vh_beta8',JSON.stringify(hist)); } catch(e){} }
+function saveHist(){ 
+    if(!hornets.some(function(h){return h.flights.length>0})) return; 
+    var hist=[]; 
+    try { hist=JSON.parse(localStorage.getItem('vh_beta8')||'[]'); } catch(e){} 
+    
+    // Save one entry per pot-à-mèche (all hornets together)
+    hist.push({
+        date:new Date().toISOString(),
+        location:{lat:surveyLocation.lat,lng:surveyLocation.lng,name:surveyLocation.name},
+        hornets:hornets.filter(function(h){return h.flights.length>0}).map(function(h){
+            return {name:h.name,direction:h.direction,flights:h.flights.slice()};
+        }),
+        notes:notes,
+        inspectorName:inspectorName
+    });
+    
+    if(hist.length>MAX_HISTORY) hist=hist.slice(-MAX_HISTORY); 
+    var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; 
+    hist=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); 
+    try { localStorage.setItem('vh_beta8',JSON.stringify(hist)); } catch(e){} 
+}
 function getHist(){ try { return JSON.parse(localStorage.getItem('vh_beta8')||'[]'); } catch(e){ return[]; } }
 function deleteHistEntry(index){ var hist=getHist(); hist.splice(index,1); localStorage.setItem('vh_beta8',JSON.stringify(hist)); showHistory(); }
-function resumeHistEntry(entry){ surveyLocation=entry.location; inspectorName=entry.inspectorName||''; notes=entry.notes||''; if(entry.hornet){ hornets=[createHornet(entry.hornet.name||'Frelon')]; hornets[0].direction=entry.hornet.direction||0; hornets[0].flights=entry.hornet.flights||[]; } updatePotMarker(); renderAll(); alert('✅ Pot-à-Mèche repris !'); }
-
+function resumeHistEntry(entry){ 
+    surveyLocation=entry.location; 
+    inspectorName=entry.inspectorName||''; 
+    notes=entry.notes||''; 
+    if(entry.hornets && entry.hornets.length>0){ 
+        hornets=entry.hornets.map(function(h){
+            var nh=createHornet(h.name||'Frelon');
+            nh.direction=h.direction||0;
+            nh.flights=h.flights||[];
+            return nh;
+        });
+    } 
+    updatePotMarker(); 
+    renderAll(); 
+    alert('✅ Pot-à-Mèche repris !'); 
+}
 function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; if(id==='compassModal') stopCompass(); }
 
@@ -226,7 +260,7 @@ function drawAnalysis(histData){
     document.getElementById('predictionPanel').innerHTML=preds.length?'🔍 '+preds.map(function(p){return p.name+' → ~'+p.dist.toFixed(0)+'m'}).join(' · '):'⚠️ Ajoutez des vols pour voir les estimations';
 }
 
-function showHistory(){ var hist=getHist(); var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; var recent=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); drawAnalysis(recent); var panel=document.getElementById('historyPanel'); panel.style.display='block'; panel.innerHTML='<div style="font-size:0.8rem;color:#c47b6b;margin-bottom:8px;">⚠️ Max 200 entrées ('+recent.length+'/'+MAX_HISTORY+')</div>'; panel.innerHTML+=recent.length?recent.reverse().map(function(e,i){ return '<div class="history-item"><strong>📅 '+new Date(e.date).toLocaleDateString()+'</strong><br>🐝 '+(e.hornet?e.hornet.name:'?')+' | 🧭 '+(e.hornet?e.hornet.direction:'?')+'° | ⏱️ '+(e.hornet&&e.hornet.flights?e.hornet.flights.length:0)+' vols<br>📍 '+(e.location?e.location.name||e.location.lat.toFixed(4)+', '+e.location.lng.toFixed(4):'?')+'<div class="history-actions"><button class="btn-gold btn-sm" onclick="resumeHistEntry(getHist()['+i+'])">🔄 Reprendre</button><button class="btn-red btn-sm" onclick="deleteHistEntry('+i+')">🗑️ Supprimer</button></div></div>'; }).join(''):'<div class="history-item">📭 Aucun historique (90 jours)</div>'; }
+function showHistory(){ var hist=getHist(); var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; var recent=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); drawAnalysis(recent); var panel=document.getElementById('historyPanel'); panel.style.display='block'; panel.innerHTML='<div style="font-size:0.8rem;color:#c47b6b;margin-bottom:8px;">⚠️ Max 200 entrées ('+recent.length+'/'+MAX_HISTORY+')</div>'; panel.innerHTML+=recent.length?recent.reverse().map(function(e,i){ return '<div class="history-item"><strong>📅 '+new Date(e.date).toLocaleDateString()+'</strong><br>'🐝 '+(e.hornets?e.hornets.length:0)+' frelons | '+(e.hornets?e.hornets.map(function(h){return h.name}).join(', '):'?')📍 '+(e.location?e.location.name||e.location.lat.toFixed(4)+', '+e.location.lng.toFixed(4):'?')+'<div class="history-actions"><button class="btn-gold btn-sm" onclick="resumeHistEntry(getHist()['+i+'])">🔄 Reprendre</button><button class="btn-red btn-sm" onclick="deleteHistEntry('+i+')">🗑️ Supprimer</button></div></div>'; }).join(''):'<div class="history-item">📭 Aucun historique (90 jours)</div>'; }
 
 var deferredPrompt;
 window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); deferredPrompt=e; document.getElementById('installBtn2').style.display='block'; });
