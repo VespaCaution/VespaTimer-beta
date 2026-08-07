@@ -155,7 +155,8 @@ function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; if(id==='compassModal') stopCompass(); }
 
 function openCompassModal(){ openModal('compassModal'); startCompass(); setTimeout(drawGraduations,100); }
-function startCompass(){ 
+function startCompass(){
+firstReading=true;
     compassActive=true; 
     document.getElementById('compassNeedle').style.display='none';
     document.getElementById('compassDirection').textContent='--°'; 
@@ -171,12 +172,10 @@ function startCompass(){
     } 
 }
 function stopCompass(){ compassActive=false; window.removeEventListener('deviceorientation',handleOrientation,true); }
-
-function drawGraduations(){ var g=document.getElementById('compassGraduations'); if(!g) return; var html=''; for(var i=0;i<360;i++){ var angle=i*Math.PI/180; var innerR=i%10===0?125:130; var outerR=145; var x1=150+innerR*Math.sin(angle); var y1=150-innerR*Math.cos(angle); var x2=150+outerR*Math.sin(angle); var y2=150-outerR*Math.cos(angle); var stroke=i%10===0?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.2)'; var sw=i%10===0?2:1; html+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>'; if(i%30===0){ var lx=150+108*Math.sin(angle); var ly=150-108*Math.cos(angle); html+='<text x="'+lx+'" y="'+ly+'" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="middle" dominant-baseline="middle">'+i+'°</text>'; } } g.innerHTML=html; }
+var firstReading=true;
 function handleOrientation(e){ 
     if(!compassActive) return; 
-    var rawAlpha=e.alpha||'none';
-    var rawWebkit=e.webkitCompassHeading||'none';
+    if(firstReading){ firstReading=false; return; } // Skip first reading
     var heading=0; 
     if(e.webkitCompassHeading!==undefined&&e.webkitCompassHeading!==null&&e.webkitCompassHeading>=0){ 
         heading=e.webkitCompassHeading; 
@@ -189,9 +188,10 @@ function handleOrientation(e){
         needle.style.display='block';
         needle.style.transform='rotate('+heading+'deg)'; 
     }
-    // Show ALL values on screen
-    document.getElementById('compassDirection').textContent=heading+'° (a:'+rawAlpha+' w:'+rawWebkit+')'; 
+    document.getElementById('compassDirection').textContent=heading+'°'; 
 }
+function drawGraduations(){ var g=document.getElementById('compassGraduations'); if(!g) return; var html=''; for(var i=0;i<360;i++){ var angle=i*Math.PI/180; var innerR=i%10===0?125:130; var outerR=145; var x1=150+innerR*Math.sin(angle); var y1=150-innerR*Math.cos(angle); var x2=150+outerR*Math.sin(angle); var y2=150-outerR*Math.cos(angle); var stroke=i%10===0?'rgba(255,255,255,0.6)':'rgba(255,255,255,0.2)'; var sw=i%10===0?2:1; html+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>'; if(i%30===0){ var lx=150+108*Math.sin(angle); var ly=150-108*Math.cos(angle); html+='<text x="'+lx+'" y="'+ly+'" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="middle" dominant-baseline="middle">'+i+'°</text>'; } } g.innerHTML=html; }
+
 function toggleCollapse(id){ collapsedCards[id]=!
 collapsedCards[id]; saveAll(); renderAll(); if(map)drawAnalysis(); }
 function toggleTimer(id){ var h=hornets.find(function(x){return x.id===id}); if(!h) return; if(h.timerRunning){ stopTimer(id); } else { startTimer(id); } }
