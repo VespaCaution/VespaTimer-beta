@@ -70,7 +70,12 @@
 <body>
 
 <div class="beta-banner">⚠️ Ceci est une version bêta/test. Veuillez ne pas utiliser cette version pour votre travail de pot à mèche.</div>
-<div class="header"><h1>🐝 VespaTimer <span style="font-size:0.8rem;color:#c47b6b;">β v2.0</span></h1></div>
+<div class="header" style="justify-content:space-between;align-items:center;">
+    <h1>🐝 VespaTimer <span style="font-size:0.8rem;color:#c47b6b;">β v2.0</span></h1>
+    <div class="flex-row" style="gap:4px;">
+        <a href="https://youtube.com/@hornetjunkie" target="_blank" style="text-decoration:none;color:#FF0000;font-size:1.2rem;" title="YouTube"><i class="fab fa-youtube"></i></a>
+</div>
+</div>
 
 <div class="card">
     <h2>👤 <span data-lang="personal_info">Infos personnelles</span></h2>
@@ -90,10 +95,7 @@
     <h2>🐝 <span data-lang="hornets_title">Frelons</span> <small>(max 13)</small></h2>
      <div class="flex-row" style="margin-bottom:8px;">
     <button class="compass-btn" onclick="openCompassModal()" title="Boussole">🧭</button>
-    <a href="https://youtube.com/@hornetjunkie" target="_blank" class="compass-btn" style="text-decoration:none;background:#f0ede5;border:2px solid #FF0000;color:#FF0000;" title="YouTube"><i class="fab fa-youtube"></i></a>
-    <a href="https://instagram.com/VespaTimer" target="_blank" class="compass-btn" style="text-decoration:none;background:#f0ede5;border:2px solid #E1306C;color:#E1306C;" title="Instagram"><i class="fab fa-instagram"></i></a>
-        <a href="https://x.com/VespaTimer" target="_blank" class="compass-btn" style="text-decoration:none;background:#f0ede5;border:2px solid #000000;color:#000000;" title="X (Twitter)"><i class="fab fa-x-twitter"></i></a>
-     </div>
+         </div>
     <div id="hornetContainer"></div>
     <button class="btn-grey" onclick="addHornet()" style="margin-top:8px;">➕ <span data-lang="add_hornet">Ajouter un frelon</span></button>
 </div>
