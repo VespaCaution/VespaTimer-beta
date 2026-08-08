@@ -124,7 +124,7 @@ rm:{personal_info:'Infurmaziuns persunalas',first_name_placeholder:'Prenum',last
 };
 
 function t(key){ return (translations[currentLang]&&translations[currentLang][key])||key; }
-function applyTranslations(){ var els=document.querySelectorAll('[data-lang]'); for(var i=0;i<els.length;i++) els[i].textContent=t(els[i].getAttribute('data-lang')); var phs=document.querySelectorAll('[data-lang-placeholder]'); for(var j=0;j<phs.length;j++) phs[j].placeholder=t(phs[j].getAttribute('data-lang-placeholder')); }
+function applyTranslations(){ var els=document.querySelectorAll('[data-lang]'); for(var i=0;i<els.length;i++){ var key=els[i].getAttribute('data-lang'); if(key==='about_footer1'){ els[i].innerHTML=t(key); } else { els[i].textContent=t(key); } } var phs=document.querySelectorAll('[data-lang-placeholder]'); for(var j=0;j<phs.length;j++) phs[j].placeholder=t(phs[j].getAttribute('data-lang-placeholder')); }
 function changeLanguage(lang){ currentLang=lang; localStorage.setItem('vl_beta13',lang); document.getElementById('langSelectModal').value=lang; applyTranslations(); renderAll(); if(map) drawAnalysis(); }
 
 function createHornet(name){ return {id:Date.now()+Math.random(),name:name||'Frelon 1',direction:0,flights:[],timerRunning:false,timerStart:null,elapsedSeconds:0}; }
