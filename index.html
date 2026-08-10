@@ -204,23 +204,13 @@ var isApple=/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent);
 if(isApple){ setTimeout(function(){ document.getElementById('installBtn2').style.display='block'; },2000); }
 function installPWA(){ var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent); if(isIOS){ alert('📱 iOS: Dans Safari, appuyez sur le bouton Partager (carré avec flèche) en bas de l\'écran, puis choisissez "Sur l\'écran d\'accueil"'); return; } if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(function(result){ deferredPrompt=null; }); } }
 
-function shareContent(title, text, url){
-    if(navigator.share){
-        navigator.share({ title: title, text: text, url: url }).catch(function(){});
-    } else {
-        dl(new Blob([text],{type:'text/plain'}), title.replace(/\s/g,'_').toLowerCase()+'.txt');
-    }
-}
-
 function exportJSON(){ 
     var data = {version:'2.0',hornets:hornets,surveyLocation:surveyLocation,inspectorName:inspectorName,notes:notes,personalInfo:personalInfo};
     var blob = new Blob([JSON.stringify(data)],{type:'application/json'});
     if(navigator.share){
         var file = new File([blob], 'vespatimer.json', {type: 'application/json'});
-        navigator.share({ files: [file], title: 'VespaTimer' }).catch(function(){ dl(blob,'vespatimer.json'); });
-    } else {
-        dl(blob,'vespatimer.json');
-    }
+        navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer.json'); });
+    } else { dl(blob,'vespatimer.json'); }
 }
 
 function exportPDF(){ 
@@ -236,10 +226,8 @@ function exportGPX(){
     var blob = new Blob([g],{type:'application/gpx+xml'});
     if(navigator.share){
         var file = new File([blob], 'vespatimer.gpx', {type: 'application/gpx+xml'});
-        navigator.share({ files: [file], title: 'VespaTimer' }).catch(function(){ dl(blob,'vespatimer.gpx'); });
-    } else {
-        dl(blob,'vespatimer.gpx');
-    }
+        navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer.gpx'); });
+    } else { dl(blob,'vespatimer.gpx'); }
 }
 
 function exportKML(){ 
@@ -249,10 +237,8 @@ function exportKML(){
     var blob = new Blob([k],{type:'application/vnd.google-earth.kml+xml'});
     if(navigator.share){
         var file = new File([blob], 'vespatimer.kml', {type: 'application/vnd.google-earth.kml+xml'});
-        navigator.share({ files: [file], title: 'VespaTimer' }).catch(function(){ dl(blob,'vespatimer.kml'); });
-    } else {
-        dl(blob,'vespatimer.kml');
-    }
+        navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer.kml'); });
+    } else { dl(blob,'vespatimer.kml'); }
 }
 
 function exportHistory(){ 
@@ -260,10 +246,8 @@ function exportHistory(){
     var blob = new Blob([JSON.stringify(hist,null,2)],{type:'application/json'});
     if(navigator.share){
         var file = new File([blob], 'vespatimer_history.json', {type: 'application/json'});
-        navigator.share({ files: [file], title: 'VespaTimer' }).catch(function(){ dl(blob,'vespatimer_history.json'); });
-    } else {
-        dl(blob,'vespatimer_history.json');
-    }
+        navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer_history.json'); });
+    } else { dl(blob,'vespatimer_history.json'); }
 }
 
 
