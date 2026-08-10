@@ -1,6 +1,6 @@
 {
-  "name": "VespaTimer Beta",
-  "short_name": "VespaTimer β",
+  "name": "VespaTimer",
+  "short_name": "VespaTimer",
   "description": "Assistant digital pour relevés Pot-à-Mèche et triangulation de nids de frelons asiatiques",
   "start_url": "./index.html",
   "scope": "./",
@@ -42,7 +42,7 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "VespaTimer Beta"
+      "label": "VespaTimer"
     }
   ],
   "lang": "fr",
