@@ -208,16 +208,25 @@ function shareContent(title, text, url){
     if(navigator.share){
         navigator.share({ title: title, text: text, url: url }).catch(function(){});
     } else {
-        alert('📤 ' + title + '\n\n' + text);
+        dl(new Blob([text],{type:'text/plain'}), title.replace(/\s/g,'_').toLowerCase()+'.txt');
     }
 }
 
 function exportJSON(){ 
     var data = {version:'2.0',hornets:hornets,surveyLocation:surveyLocation,inspectorName:inspectorName,notes:notes,personalInfo:personalInfo};
-    var blob = new Blob([JSON.stringify(data)],{type:'application/json'});
+    var jsonStr = JSON.stringify(data);
+    var blob = new Blob([jsonStr],{type:'application/json'});
     var url = URL.createObjectURL(blob);
-    shareContent('VespaTimer JSON', 'Données VespaTimer', url);
-    dl(blob,'vespatimer.json');
+    if(navigator.share){
+        var file = new File([blob], 'vespatimer.json', {type: 'application/json'});
+        if(navigator.canShare && navigator.canShare({files: [file]})){
+            navigator.share({ files: [file], title: 'VespaTimer JSON' }).catch(function(){});
+        } else {
+            navigator.share({ title: 'VespaTimer JSON', text: jsonStr }).catch(function(){});
+        }
+    } else {
+        dl(blob,'vespatimer.json');
+    }
 }
 
 function exportPDF(){ 
@@ -225,11 +234,8 @@ function exportPDF(){
     if(map){
         var potLatLng = L.latLng(surveyLocation.lat, surveyLocation.lng);
         map.setView(potLatLng, 12);
-        setTimeout(function(){ map.invalidateSize(); }, 300);
     }
-    setTimeout(function(){ 
-        window.print(); 
-    }, 500); 
+    window.print(); 
 }
 
 function exportGPX(){ 
@@ -238,8 +244,16 @@ function exportGPX(){
     g+='</gpx>'; 
     var blob = new Blob([g],{type:'application/gpx+xml'});
     var url = URL.createObjectURL(blob);
-    shareContent('VespaTimer GPX', 'Coordonnées GPS VespaTimer', url);
-    dl(blob,'vespatimer.gpx');
+    if(navigator.share){
+        var file = new File([blob], 'vespatimer.gpx', {type: 'application/gpx+xml'});
+        if(navigator.canShare && navigator.canShare({files: [file]})){
+            navigator.share({ files: [file], title: 'VespaTimer GPX' }).catch(function(){});
+        } else {
+            navigator.share({ title: 'VespaTimer GPX', text: g }).catch(function(){});
+        }
+    } else {
+        dl(blob,'vespatimer.gpx');
+    }
 }
 
 function exportKML(){ 
@@ -248,17 +262,35 @@ function exportKML(){
     k+='</Document></kml>'; 
     var blob = new Blob([k],{type:'application/vnd.google-earth.kml+xml'});
     var url = URL.createObjectURL(blob);
-    shareContent('VespaTimer KML', 'Données Google Earth VespaTimer', url);
-    dl(blob,'vespatimer.kml');
+    if(navigator.share){
+        var file = new File([blob], 'vespatimer.kml', {type: 'application/vnd.google-earth.kml+xml'});
+        if(navigator.canShare && navigator.canShare({files: [file]})){
+            navigator.share({ files: [file], title: 'VespaTimer KML' }).catch(function(){});
+        } else {
+            navigator.share({ title: 'VespaTimer KML', text: k }).catch(function(){});
+        }
+    } else {
+        dl(blob,'vespatimer.kml');
+    }
 }
 
 function exportHistory(){ 
     var hist=getHist(); 
-    var blob = new Blob([JSON.stringify(hist,null,2)],{type:'application/json'});
+    var jsonStr = JSON.stringify(hist,null,2);
+    var blob = new Blob([jsonStr],{type:'application/json'});
     var url = URL.createObjectURL(blob);
-    shareContent('VespaTimer Historique', 'Historique des relevés VespaTimer', url);
-    dl(blob,'vespatimer_history.json');
+    if(navigator.share){
+        var file = new File([blob], 'vespatimer_history.json', {type: 'application/json'});
+        if(navigator.canShare && navigator.canShare({files: [file]})){
+            navigator.share({ files: [file], title: 'VespaTimer Historique' }).catch(function(){});
+        } else {
+            navigator.share({ title: 'VespaTimer Historique', text: jsonStr }).catch(function(){});
+        }
+    } else {
+        dl(blob,'vespatimer_history.json');
+    }
 }
+
 function importData(e){ var f=e.target.files[0]; if(!f) return; var reader=new FileReader(); reader.onload=function(ev){ try{ var d=JSON.parse(ev.target.result); if(d.hornets)hornets=d.hornets.map(function(h){ var nh=createHornet(h.name||'Frelon'); nh.direction=h.direction||0; nh.flights=h.flights||[]; return nh; }); if(d.surveyLocation)surveyLocation=d.surveyLocation; inspectorName=d.inspectorName||''; notes=d.notes||''; if(d.personalInfo)personalInfo=d.personalInfo; updatePotMarker(); renderAll(); alert(t('import_success')); }catch(ex){ alert(t('import_error')); } }; reader.readAsText(f); e.target.value=''; }
 function importHistory(e){ var f=e.target.files[0]; if(!f) return; var reader=new FileReader(); reader.onload=function(ev){ try{ var d=JSON.parse(ev.target.result); if(Array.isArray(d)){ localStorage.setItem('vh_beta13',JSON.stringify(d)); alert('✅ Historique importé!'); showHistory(); } }catch(ex){ alert(t('import_error')); } }; reader.readAsText(f); e.target.value=''; }
 function resetAll(){ if(!confirm(t('confirm_reset'))) return; saveHist(); hornets=[createHornet('Frelon 1')]; surveyLocation={lat:46.8,lng:6.8,name:''}; inspectorName=''; notes=''; personalInfo={firstName:'',lastName:'',phone:''}; collapsedCards={}; document.getElementById('locationInput').value=''; document.getElementById('inspectorInput').value=''; document.getElementById('notesField').value=''; document.getElementById('firstName').value=''; document.getElementById('lastName').value=''; document.getElementById('phone').value=''; updatePotMarker(); renderAll(); }
