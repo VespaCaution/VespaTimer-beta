@@ -224,26 +224,10 @@ function exportPDF(){
     closeModal('exportModal');
     if(map){
         var potLatLng = L.latLng(surveyLocation.lat, surveyLocation.lng);
-        map.setView(potLatLng, 14);
+        map.setView(potLatLng, 12);
         setTimeout(function(){ map.invalidateSize(); }, 300);
     }
     setTimeout(function(){ 
-        var r='RAPPORT VESPATIMER v2.0\n'+new Date().toLocaleString()+'\n\n'; 
-        r+='Nom: '+(personalInfo.firstName||'?')+' '+(personalInfo.lastName||'?')+' | Tel: '+(personalInfo.phone||'?')+'\n'; 
-        r+='Triangulateur: '+(inspectorName||'?')+'\n'; 
-        r+='Pot: '+(surveyLocation.name||'?')+' ('+surveyLocation.lat.toFixed(5)+', '+surveyLocation.lng.toFixed(5)+')\n\n'; 
-        for(var i=0;i<hornets.length;i++){ 
-            var h=hornets[i],a=getAvg(h),d=getDist(a),n=getNestCoords(h); 
-            r+=h.name+': Dir='+h.direction+'° Vols='+h.flights.join(',')+'s Moy='+a.toFixed(1)+'s Dist='+d.toFixed(0)+'m'; 
-            if(n) r+=' | Nid: '+n.lat.toFixed(5)+', '+n.lng.toFixed(5); 
-            r+='\n'; 
-        } 
-        navigator.clipboard.writeText(r);
-        if(navigator.share){
-            navigator.share({ title: 'Rapport VespaTimer', text: r }).catch(function(){});
-        } else {
-            alert('✅ Rapport copié. Le PDF va s\'ouvrir.');
-        }
         window.print(); 
     }, 500); 
 }
