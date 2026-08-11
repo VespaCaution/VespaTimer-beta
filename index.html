@@ -210,8 +210,7 @@ function exportJSON(){
     var data = {version:'2.0',hornets:hornets,surveyLocation:surveyLocation,inspectorName:inspectorName,notes:notes,personalInfo:personalInfo};
     var blob = new Blob([JSON.stringify(data)],{type:'text/plain'});
     var file = new File([blob], 'vespatimer.json', {type: 'text/plain'});
-    if(navigator.share){ navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer.json'); }); }
-    else { dl(blob,'vespatimer.json'); }
+    navigator.share({ files: [file] }).catch(function(err){ alert('Error: '+err); dl(blob,'vespatimer.json'); });
 }
 
 function exportPDF(){ 
@@ -226,8 +225,7 @@ function exportGPX(){
     g+='</gpx>'; 
     var blob = new Blob([g],{type:'text/plain'});
     var file = new File([blob], 'vespatimer.gpx', {type: 'text/plain'});
-    if(navigator.share){ navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer.gpx'); }); }
-    else { dl(blob,'vespatimer.gpx'); }
+    navigator.share({ files: [file] }).catch(function(err){ alert('Error: '+err); dl(blob,'vespatimer.gpx'); });
 }
 
 function exportKML(){ 
@@ -236,18 +234,15 @@ function exportKML(){
     k+='</Document></kml>'; 
     var blob = new Blob([k],{type:'text/plain'});
     var file = new File([blob], 'vespatimer.kml', {type: 'text/plain'});
-    if(navigator.share){ navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer.kml'); }); }
-    else { dl(blob,'vespatimer.kml'); }
+    navigator.share({ files: [file] }).catch(function(err){ alert('Error: '+err); dl(blob,'vespatimer.kml'); });
 }
 
 function exportHistory(){ 
     var hist=getHist(); 
     var blob = new Blob([JSON.stringify(hist,null,2)],{type:'text/plain'});
     var file = new File([blob], 'vespatimer_history.json', {type: 'text/plain'});
-    if(navigator.share){ navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer_history.json'); }); }
-    else { dl(blob,'vespatimer_history.json'); }
-}
-
+    navigator.share({ files: [file] }).catch(function(err){ alert('Error: '+err); dl(blob,'vespatimer_history.json'); });
+        }
 
 function importData(e){ var f=e.target.files[0]; if(!f) return; var reader=new FileReader(); reader.onload=function(ev){ try{ var d=JSON.parse(ev.target.result); if(d.hornets)hornets=d.hornets.map(function(h){ var nh=createHornet(h.name||'Frelon'); nh.direction=h.direction||0; nh.flights=h.flights||[]; return nh; }); if(d.surveyLocation)surveyLocation=d.surveyLocation; inspectorName=d.inspectorName||''; notes=d.notes||''; if(d.personalInfo)personalInfo=d.personalInfo; updatePotMarker(); renderAll(); alert(t('import_success')); }catch(ex){ alert(t('import_error')); } }; reader.readAsText(f); e.target.value=''; }
 function importHistory(e){ var f=e.target.files[0]; if(!f) return; var reader=new FileReader(); reader.onload=function(ev){ try{ var d=JSON.parse(ev.target.result); if(Array.isArray(d)){ localStorage.setItem('vh_beta13',JSON.stringify(d)); alert('✅ Historique importé!'); showHistory(); } }catch(ex){ alert(t('import_error')); } }; reader.readAsText(f); e.target.value=''; }
