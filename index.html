@@ -229,8 +229,11 @@ function selectColor(hornetId,color){
 }
 
 // ============ LONG PRESS ============
+
 var longPressTimer;
-function startLongPress(hornetId,event){ event.preventDefault(); longPressTimer=setTimeout(function(){ changeHornetColor(hornetId); },800); }
+function startLongPress(hornetId,event){ 
+    longPressTimer=setTimeout(function(){ changeHornetColor(hornetId); },800); 
+}
 function cancelLongPress(){ clearTimeout(longPressTimer); }
 
 // ============ RENDER ============
@@ -243,7 +246,7 @@ function renderAll(){
         var badgeBg=h.timerRunning?'#c47b6b':(fc>0?'#5f7d6b':'#d4a853');
         var badgeText=h.timerRunning?'⏳ '+t('running'):(fc>0?'✅ '+fc+'/5 '+t('flights_label'):'🆕 '+t('ready')); var nest=getNestCoords(h);
         var flightsHtml='—'; if(fc){ var fs=[]; for(var fi=0;fi<h.flights.length;fi++){ fs.push('<span class="flight-item">'+h.flights[fi]+'s <button class="flight-delete-btn" onclick="event.stopPropagation();deleteFlight('+h.id+','+fi+')" title="'+t('flight_delete')+'">✕</button></span>'); } flightsHtml=fs.join(' '); }
-        html+='<div class="hornet-card'+(isCollapsed?' collapsed-card':'')+'" style="border-left:14px solid '+c+';" onmousedown="startLongPress('+h.id+',event)" onmouseup="cancelLongPress()" onmouseleave="cancelLongPress()" ontouchstart="startLongPress('+h.id+',event)" ontouchend="cancelLongPress()" ontouchcancel="cancelLongPress()">';
+        html+='<div class="hornet-card'+(isCollapsed?' collapsed-card':'')+'" style="border-left:14px solid '+c+';" onmousedown="startLongPress('+h.id+',event)" onmouseup="cancelLongPress()" onmouseleave="cancelLongPress()" ontouchstart="startLongPress('+h.id+')" ontouchend="cancelLongPress()" ontouchcancel="cancelLongPress()">';
         html+='<div class="hornet-header" onclick="toggleCollapse('+h.id+')">';
         html+='<div style="display:flex;justify-content:space-between;align-items:center;width:100%;flex-wrap:wrap;gap:8px;">';
         html+='<input class="hornet-name-input" value="'+h.name+'" style="color:'+c+';" onclick="event.stopPropagation()" onchange="updateName('+h.id+',this.value)">';
