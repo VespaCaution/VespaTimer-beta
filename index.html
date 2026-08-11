@@ -212,10 +212,17 @@ function exportJSON(){
     var blob = new Blob([jsonStr],{type:'text/plain'});
     if(navigator.share){
         var file = new File([blob], 'vespatimer.json', {type: 'text/plain'});
-        navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer.json'); });
-    } else { dl(blob,'vespatimer.json'); }
+        navigator.share({ files: [file] }).then(function(){
+            alert('✅ Share succeeded!');
+        }).catch(function(err){
+            alert('❌ Share failed: ' + err.message);
+            dl(blob,'vespatimer.json');
+        });
+    } else {
+        alert('❌ Share not supported');
+        dl(blob,'vespatimer.json');
+    }
 }
-
 function exportPDF(){ 
     closeModal('exportModal');
     if(map){ map.setView([surveyLocation.lat, surveyLocation.lng], 12); }
