@@ -208,65 +208,16 @@ function installPWA(){ var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent); i
 
 function exportJSON(){ 
     var data = {version:'2.0',hornets:hornets,surveyLocation:surveyLocation,inspectorName:inspectorName,notes:notes,personalInfo:personalInfo};
-    var jsonStr = JSON.stringify(data);
-    var blob = new Blob([jsonStr],{type:'text/plain'});
-    if(navigator.share){
-        var file = new File([blob], 'vespatimer.json', {type: 'text/plain'});
-        navigator.share({ files: [file] }).then(function(){
-            alert('✅ Share succeeded!');
-        }).catch(function(err){
-            alert('❌ Share failed: ' + err.message);
-            dl(blob,'vespatimer.json');
-        });
-    } else {
-        alert('❌ Share not supported');
-        dl(blob,'vespatimer.json');
-    }
+    var blob = new Blob([JSON.stringify(data)],{type:'text/plain'});
+    var file = new File([blob], 'vespatimer.json', {type: 'text/plain'});
+    if(navigator.share){ navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer.json'); }); }
+    else { dl(blob,'vespatimer.json'); }
 }
+
 function exportPDF(){ 
     closeModal('exportModal');
     if(map){ map.setView([surveyLocation.lat, surveyLocation.lng], 12); }
-    setTimeout(function(){
-        var doc = new jspdf.jsPDF();
-        var y = 20;
-        doc.setFontSize(18);
-        doc.text('RAPPORT VESPATIMER v2.0', 105, y, {align: 'center'});
-        y += 10;
-        doc.setFontSize(10);
-        doc.text(new Date().toLocaleString(), 105, y, {align: 'center'});
-        y += 10;
-        doc.setFontSize(11);
-        doc.text('Nom: '+(personalInfo.firstName||'?')+' '+(personalInfo.lastName||'?')+' | Tel: '+(personalInfo.phone||'?'), 10, y);
-        y += 6;
-        doc.text('Triangulateur: '+(inspectorName||'?'), 10, y);
-        y += 6;
-        doc.text('Pot: '+(surveyLocation.name||'?')+' ('+surveyLocation.lat.toFixed(5)+', '+surveyLocation.lng.toFixed(5)+')', 10, y);
-        y += 6;
-        doc.text('Notes: '+(notes||'N/A'), 10, y);
-        y += 10;
-        doc.setFontSize(12);
-        doc.text('FRELONS:', 10, y);
-        y += 8;
-        doc.setFontSize(10);
-        for(var i=0;i<hornets.length;i++){
-            var h=hornets[i],a=getAvg(h),d=getDist(a),n=getNestCoords(h);
-            var line = h.name+': Dir='+h.direction+' | Vols='+h.flights.join(',')+'s | Moy='+a.toFixed(1)+'s | Dist='+d.toFixed(0)+'m';
-            if(n) line += ' | Nid: '+n.lat.toFixed(5)+', '+n.lng.toFixed(5);
-            doc.text(line, 10, y);
-            y += 5;
-            if(y > 270){ doc.addPage(); y = 20; }
-        }
-        y += 8;
-        doc.setFontSize(9);
-        doc.text('Signalement: frelonasiatique.ch | stopfrelons.ch', 105, y, {align: 'center'});
-        var pdfBlob = doc.output('blob');
-        if(navigator.share){
-            var file = new File([pdfBlob], 'rapport-vespatimer.pdf', {type: 'application/pdf'});
-            navigator.share({ files: [file] }).catch(function(){ dl(pdfBlob,'rapport-vespatimer.pdf'); });
-        } else {
-            dl(pdfBlob,'rapport-vespatimer.pdf');
-        }
-    }, 500);
+    setTimeout(function(){ window.print(); }, 400);
 }
 
 function exportGPX(){ 
@@ -274,10 +225,9 @@ function exportGPX(){
     for(var i=0;i<hornets.length;i++){ var h=hornets[i]; if(!h.flights.length) continue; var d=getDist(getAvg(h)); if(d<=0) continue; var n=getNestCoords(h); if(n) g+='<wpt lat="'+n.lat.toFixed(6)+'" lon="'+n.lng.toFixed(6)+'"><name>'+h.name+'</name></wpt>'; } 
     g+='</gpx>'; 
     var blob = new Blob([g],{type:'text/plain'});
-    if(navigator.share){
-        var file = new File([blob], 'vespatimer.gpx', {type: 'text/plain'});
-        navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer.gpx'); });
-    } else { dl(blob,'vespatimer.gpx'); }
+    var file = new File([blob], 'vespatimer.gpx', {type: 'text/plain'});
+    if(navigator.share){ navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer.gpx'); }); }
+    else { dl(blob,'vespatimer.gpx'); }
 }
 
 function exportKML(){ 
@@ -285,21 +235,19 @@ function exportKML(){
     for(var i=0;i<hornets.length;i++){ var h=hornets[i]; if(!h.flights.length) continue; var d=getDist(getAvg(h)); if(d<=0) continue; var n=getNestCoords(h); if(n) k+='<Placemark><name>'+h.name+'</name><Point><coordinates>'+n.lng.toFixed(6)+','+n.lat.toFixed(6)+',0</coordinates></Point></Placemark>'; } 
     k+='</Document></kml>'; 
     var blob = new Blob([k],{type:'text/plain'});
-    if(navigator.share){
-        var file = new File([blob], 'vespatimer.kml', {type: 'text/plain'});
-        navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer.kml'); });
-    } else { dl(blob,'vespatimer.kml'); }
+    var file = new File([blob], 'vespatimer.kml', {type: 'text/plain'});
+    if(navigator.share){ navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer.kml'); }); }
+    else { dl(blob,'vespatimer.kml'); }
 }
 
 function exportHistory(){ 
     var hist=getHist(); 
-    var jsonStr = JSON.stringify(hist,null,2);
-    var blob = new Blob([jsonStr],{type:'text/plain'});
-    if(navigator.share){
-        var file = new File([blob], 'vespatimer_history.json', {type: 'text/plain'});
-        navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer_history.json'); });
-    } else { dl(blob,'vespatimer_history.json'); }
+    var blob = new Blob([JSON.stringify(hist,null,2)],{type:'text/plain'});
+    var file = new File([blob], 'vespatimer_history.json', {type: 'text/plain'});
+    if(navigator.share){ navigator.share({ files: [file] }).catch(function(){ dl(blob,'vespatimer_history.json'); }); }
+    else { dl(blob,'vespatimer_history.json'); }
 }
+
 
 function importData(e){ var f=e.target.files[0]; if(!f) return; var reader=new FileReader(); reader.onload=function(ev){ try{ var d=JSON.parse(ev.target.result); if(d.hornets)hornets=d.hornets.map(function(h){ var nh=createHornet(h.name||'Frelon'); nh.direction=h.direction||0; nh.flights=h.flights||[]; return nh; }); if(d.surveyLocation)surveyLocation=d.surveyLocation; inspectorName=d.inspectorName||''; notes=d.notes||''; if(d.personalInfo)personalInfo=d.personalInfo; updatePotMarker(); renderAll(); alert(t('import_success')); }catch(ex){ alert(t('import_error')); } }; reader.readAsText(f); e.target.value=''; }
 function importHistory(e){ var f=e.target.files[0]; if(!f) return; var reader=new FileReader(); reader.onload=function(ev){ try{ var d=JSON.parse(ev.target.result); if(Array.isArray(d)){ localStorage.setItem('vh_beta13',JSON.stringify(d)); alert('✅ Historique importé!'); showHistory(); } }catch(ex){ alert(t('import_error')); } }; reader.readAsText(f); e.target.value=''; }
