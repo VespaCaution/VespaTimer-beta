@@ -172,7 +172,49 @@ function saveHist(){
 }
 function getHist(){ try { var data=localStorage.getItem('vh_v2'); if(!data) return []; var parsed=JSON.parse(data); if(Array.isArray(parsed)) return parsed; return []; } catch(e){ localStorage.removeItem('vh_v2'); return[]; } }
 function deleteHistEntry(index){ var hist=getHist(); hist.splice(index,1); localStorage.setItem('vh_v2',JSON.stringify(hist)); showHistory(); }
-function resumeHistEntry(entry){ surveyLocation=entry.location; inspectorName=entry.inspectorName||''; notes=entry.notes||''; if(entry.personalInfo&&entry.personalInfo.firstName!==undefined){ personalInfo=entry.personalInfo; document.getElementById('firstName').value=personalInfo.firstName||''; document.getElementById('lastName').value=personalInfo.lastName||''; document.getElementById('phone').value=personalInfo.phone||''; } if(entry.hornets&&entry.hornets.length>0){ hornets=entry.hornets.map(function(h){ var nh=createHornet(h.name||'Frelon'); nh.direction=h.direction||0; nh.flights=h.flights||[]; nh.color=h.color||null; return nh; }); } var hist=getHist(); for(var i=0;i<hist.length;i++){ if(hist[i].date===entry.date){ resumedFromIndex=i; break; } } updatePotMarker(); renderAll(); alert(t('pot_resumed')); }
+function resumeHistEntry(entry){ 
+    // Restore pot-à-mèche info
+    surveyLocation=entry.location;
+    document.getElementById('locationInput').value=entry.location.name||'';
+    
+    // Restore inspector and notes
+    inspectorName=entry.inspectorName||'';
+    notes=entry.notes||'';
+    document.getElementById('inspectorInput').value=inspectorName;
+    document.getElementById('notesField').value=notes;
+    
+    // Restore personal info
+    if(entry.personalInfo){
+        personalInfo=entry.personalInfo;
+        document.getElementById('firstName').value=personalInfo.firstName||'';
+        document.getElementById('lastName').value=personalInfo.lastName||'';
+        document.getElementById('phone').value=personalInfo.phone||'';
+    }
+    
+    // Restore hornets
+    if(entry.hornets&&entry.hornets.length>0){ 
+        hornets=entry.hornets.map(function(h){ 
+            var nh=createHornet(h.name||'Frelon'); 
+            nh.direction=h.direction||0; 
+            nh.flights=h.flights||[]; 
+            nh.color=h.color||null; 
+            return nh; 
+        }); 
+    }
+    
+    // Find entry by date for updating later
+    var hist=getHist();
+    for(var i=0;i<hist.length;i++){ 
+        if(hist[i].date===entry.date){ 
+            resumedFromIndex=i; 
+            break; 
+        } 
+    }
+    
+    updatePotMarker(); 
+    renderAll(); 
+    alert(t('pot_resumed')); 
+}
 function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; if(id==='compassModal') stopCompass(); }
 function openCompassModal(){ openModal('compassModal'); startCompass(); setTimeout(drawGraduations,100); }
