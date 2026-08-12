@@ -334,20 +334,20 @@ function boot(){
     applyTranslations(); 
     renderAll(); 
     setTimeout(initMap,500);
-    setTimeout(function(){
-        var params=new URLSearchParams(window.location.search);
-        var action=params.get('action');
-        if(action==='new'){
-    if(hornets.some(function(h){return h.flights.length>0})){
-        if(confirm(t('confirm_reset'))){ resetAll(); }
+setTimeout(function(){
+    var params=new URLSearchParams(window.location.search);
+    var action=params.get('action');
+    if(action==='new'){
+        if(hornets.some(function(h){return h.flights.length>0})){
+            resetAll();
+        }
     }
-        }
-        if(action==='map'){
-            var el=document.getElementById('map');
-            if(el) el.scrollIntoView({behavior:'smooth'});
-        }
-        if(action){ window.history.replaceState({},document.title,window.location.pathname); }
-    },1000);
+    if(action==='map'){
+        var el=document.getElementById('map');
+        if(el) el.scrollIntoView({behavior:'smooth'});
+    }
+    if(action){ window.history.replaceState({},document.title,window.location.pathname); }
+},1000);
 }
 if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',boot); } else { boot(); }
 </script>
