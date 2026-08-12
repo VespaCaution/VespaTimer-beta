@@ -298,11 +298,58 @@ function renderAll(){
     if(!hwf.length){ statsDiv.innerHTML=t('no_flights_stats'); } else { var sh=''; for(var si=0;si<hwf.length;si++){ var shh=hwf[si]; var sc=shh.color||COLORS[hornets.indexOf(shh)%COLORS.length]; sh+='<span style="color:'+sc+';">● '+shh.name+': '+getAvg(shh).toFixed(1)+'s</span><br>'; } var ga=0; for(var gi=0;gi<hwf.length;gi++) ga+=getAvg(hwf[gi]); ga/=hwf.length; sh+='<strong>📈 Moy. globale: '+ga.toFixed(1)+'s</strong>'; statsDiv.innerHTML=sh; }
     saveAll(); if(map) drawAnalysis();
 }
-setInterval(function(){ var anyRunning=false; for(var i=0;i<hornets.length;i++){ var h=hornets[i]; if(h.timerRunning&&h.timerStart){ anyRunning=true; var s=Math.floor((Date.now()-h.timerStart)/1000); var txt=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); var cards=document.querySelectorAll('.hornet-card'); if(cards[i]){ var displays=cards[i].querySelectorAll('.timer-display'); for(var d=0;d<displays.length;d++){ displays[d].textContent=txt; } } } } document.getElementById('liveBanner').style.display=anyRunning?'block':'none'; document.getElementById('datetime').textContent=new Date().toLocaleString(); },200);
-if('serviceWorker' in navigator){ var refreshing=false; navigator.serviceWorker.addEventListener('controllerchange',function(){ if(!refreshing){ refreshing=true; window.location.reload(); } }); window.addEventListener('load',function(){ navigator.serviceWorker.register('service-worker.js').catch(function(){}); }); setInterval(function(){ navigator.serviceWorker.getRegistration().then(function(reg){ if(reg) reg.update(); }); },300000); }
-function boot(){ loadAll(); applyTranslations(); renderAll(); setTimeout(initMap,500); }
-if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',boot); } else { boot(); }
 
+    setInterval(function(){ 
+    var anyRunning=false;
+    for(var i=0;i<hornets.length;i++){ 
+        var h=hornets[i];
+        if(h.timerRunning&&h.timerStart){ 
+            anyRunning=true;
+            var s=Math.floor((Date.now()-h.timerStart)/1000);
+            var txt=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+            var cards=document.querySelectorAll('.hornet-card');
+            if(cards[i]){ 
+                var displays=cards[i].querySelectorAll('.timer-display');
+                for(var d=0;d<displays.length;d++){ displays[d].textContent=txt; }
+            }
+        }
+    }
+    document.getElementById('liveBanner').style.display=anyRunning?'block':'none';
+    document.getElementById('datetime').textContent=new Date().toLocaleString(); 
+},200);
+
+if('serviceWorker' in navigator){ 
+    navigator.serviceWorker.register('service-worker.js').catch(function(){});
+    var refreshing=false;
+    navigator.serviceWorker.addEventListener('controllerchange',function(){
+        if(!refreshing){ refreshing=true; window.location.reload(); }
+    });
+    setInterval(function(){ 
+        navigator.serviceWorker.getRegistration().then(function(reg){ if(reg) reg.update(); }); 
+    },300000);
+}
+
+function boot(){ 
+    loadAll(); 
+    applyTranslations(); 
+    renderAll(); 
+    setTimeout(initMap,500);
+    setTimeout(function(){
+        var params=new URLSearchParams(window.location.search);
+        var action=params.get('action');
+        if(action==='new'){
+            if(hornets.some(function(h){return h.flights.length>0})){
+                if(confirm(t('confirm_reset'))){ saveHist();resetAll(); }
+            }
+        }
+        if(action==='map'){
+            var el=document.getElementById('map');
+            if(el) el.scrollIntoView({behavior:'smooth'});
+        }
+        if(action){ window.history.replaceState({},document.title,window.location.pathname); }
+    },1000);
+}
+if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',boot); } else { boot(); }
 </script>
 </body>
 </html>
