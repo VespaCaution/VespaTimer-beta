@@ -33,7 +33,7 @@
         .btn-grey { background:#e8e0d0; color:var(--text); }
         .btn-sm { padding:6px 12px; font-size:0.78rem; }
         input, textarea, select { font-size:16px; padding:10px; border-radius:14px; border:2px solid #e0d5c0; width:100%; background:#fefdf9; margin:4px 0; }
-        .hornet-card { background:#fefaf2; border-radius:16px; padding:14px; margin-bottom:10px; cursor:pointer; }
+        .hornet-card { background:#fefaf2; border-radius:16px; margin-bottom:10px; cursor:pointer; overflow:hidden; display:flex; padding:0; }     
         .hornet-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
         .hornet-name-input { border:none!important; background:transparent!important; font-weight:700; font-size:1.05rem!important; width:130px!important; padding:2px!important; }
         .dir-input { width:70px!important; text-align:center; display:inline-block; }
@@ -270,7 +270,9 @@ function renderAll(){
         var badgeBg=h.timerRunning?'#c47b6b':(fc>0?'#5f7d6b':'#d4a853');
         var badgeText=h.timerRunning?'⏳ '+t('running'):(fc>0?'✅ '+fc+'/5 '+t('flights_label'):'🆕 '+t('ready')); var nest=getNestCoords(h);
         var flightsHtml='—'; if(fc){ var fs=[]; for(var fi=0;fi<h.flights.length;fi++){ fs.push('<span class="flight-item">'+h.flights[fi]+'s <button class="flight-delete-btn" onclick="event.stopPropagation();deleteFlight('+h.id+','+fi+')" title="'+t('flight_delete')+'">✕</button></span>'); } flightsHtml=fs.join(' '); }
-        html+='<div class="hornet-card'+(isCollapsed?' collapsed-card':'')+'" style="border-left:14px solid '+c+';" onmousedown="startLongPress('+h.id+',event)" onmouseup="cancelLongPress()" onmouseleave="cancelLongPress()" ontouchstart="startLongPress('+h.id+')" ontouchend="cancelLongPress()" ontouchcancel="cancelLongPress()">';
+        html+='<div class="hornet-card'+(isCollapsed?' collapsed-card':'')+'">';
+        html+='<div style="width:14px;min-height:100%;background:'+c+';border-radius:16px 0 0 16px;cursor:pointer;flex-shrink:0;" onmousedown="event.stopPropagation();startLongPress('+h.id+')" onmouseup="cancelLongPress()" onmouseleave="cancelLongPress()" ontouchstart="event.stopPropagation();startLongPress('+h.id+')" ontouchend="cancelLongPress()" ontouchcancel="cancelLongPress()"></div>';
+        html+='<div style="flex:1;padding:14px;">';
         html+='<div class="hornet-header" onclick="toggleCollapse('+h.id+')">';
         html+='<div style="display:flex;justify-content:space-between;align-items:center;width:100%;flex-wrap:wrap;gap:8px;">';
         html+='<input class="hornet-name-input" value="'+h.name+'" style="color:'+c+';" onclick="event.stopPropagation()" onchange="updateName('+h.id+',this.value)">';
@@ -283,8 +285,8 @@ function renderAll(){
         html+='<div style="font-size:0.9rem;">📏 Moy: <strong>'+avg.toFixed(1)+'s</strong> · 🗺️ Dist: <strong>'+dist.toFixed(0)+'m</strong></div>';
         if(nest){ html+='<div style="font-size:0.78rem;">📍 Nid: <strong>'+nest.lat.toFixed(5)+', '+nest.lng.toFixed(5)+'</strong></div>'; }
         html+='<div style="background:#f9f4e8;border-radius:12px;padding:8px;margin-top:6px;"><span style="font-size:0.8rem;">✍️ '+t('manual_time')+':</span><div class="flex-row" style="margin-top:4px;"><input type="number" id="mt_'+h.id+'" style="width:60px;text-align:center;padding:4px;" placeholder="'+t('manual_time_placeholder')+'" min="1"><button class="btn-gold btn-sm" onclick="addManualTime('+h.id+')" '+(fc>=5?'disabled':'')+'>➕ '+t('add_manual')+'</button></div></div>';
-        html+='</div></div>';
-    }
+        html+='</div></div></div>';
+          }
     container.innerHTML=html;
     document.getElementById('locationDisplay').textContent=surveyLocation.name||surveyLocation.lat.toFixed(5)+', '+surveyLocation.lng.toFixed(5);
     document.getElementById('datetime').textContent=new Date().toLocaleString();
