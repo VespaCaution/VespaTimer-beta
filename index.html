@@ -337,11 +337,11 @@ function boot(){
 setTimeout(function(){
     var params=new URLSearchParams(window.location.search);
     var action=params.get('action');
-    if(action==='new'){
-        if(hornets.some(function(h){return h.flights.length>0})){
-            resetAll();
-        }
+if(action==='new'){
+    if(hornets.some(function(h){return h.flights.length>0})){
+        setTimeout(function(){ resetAll(); },500);
     }
+}
     if(action==='map'){
         var el=document.getElementById('map');
         if(el) el.scrollIntoView({behavior:'smooth'});
