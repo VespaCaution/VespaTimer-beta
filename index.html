@@ -161,16 +161,13 @@ function saveHist(){
         inspectorName:inspectorName,
         personalInfo:{firstName:personalInfo.firstName,lastName:personalInfo.lastName,phone:personalInfo.phone}
     }; 
-    if(resumedFromIndex>=0&&resumedFromIndex<hist.length){ 
-        hist[resumedFromIndex]=newEntry; 
-    } else { 
-        hist.push(newEntry); 
-    } 
+    if(resumedFromIndex>=0&&resumedFromIndex<hist.length){ hist[resumedFromIndex]=newEntry; } 
+    else { hist.push(newEntry); } 
     if(hist.length>MAX_HISTORY) hist=hist.slice(-MAX_HISTORY); 
     var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; 
     hist=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); 
     try { localStorage.setItem('vh_v2',JSON.stringify(hist)); } catch(e){} 
-}
+        }
 function deleteHistEntry(index){ var hist=getHist(); hist.splice(index,1); localStorage.setItem('vh_v2',JSON.stringify(hist)); showHistory(); }
 function resumeHistEntry(entry){ 
     surveyLocation=entry.location; 
@@ -192,7 +189,7 @@ function resumeHistEntry(entry){
         }); 
     } 
     var hist=getHist(); 
-    resumedFromIndex=hist.indexOf(entry); 
+    for(var i=0;i<hist.length;i++){ if(hist[i].date===entry.date){ resumedFromIndex=i; break; } }
     updatePotMarker(); 
     renderAll(); 
     alert(t('pot_resumed')); 
