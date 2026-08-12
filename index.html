@@ -338,9 +338,9 @@ function boot(){
         var params=new URLSearchParams(window.location.search);
         var action=params.get('action');
         if(action==='new'){
-            if(hornets.some(function(h){return h.flights.length>0})){
-                if(confirm(t('confirm_reset'))){ saveHist();resetAll(); }
-            }
+    if(hornets.some(function(h){return h.flights.length>0})){
+        if(confirm(t('confirm_reset'))){ resetAll(); }
+    }
         }
         if(action==='map'){
             var el=document.getElementById('map');
