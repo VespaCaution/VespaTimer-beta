@@ -11,44 +11,17 @@
   "theme_color": "#d4a853",
   "orientation": "any",
   "icons": [
-    {
-      "src": "icon.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
+    { "src": "icon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
-  "screenshots": [
-    {
-      "src": "icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "VespaTimer"
-    }
+  "shortcuts": [
+    { "name": "Nouveau relevé", "short_name": "Relevé", "description": "Démarrer un nouveau relevé", "url": "./index.html", "icons": [{ "src": "icon.png", "sizes": "96x96" }] },
+    { "name": "Carte", "short_name": "Carte", "description": "Ouvrir la carte", "url": "./index.html?action=map", "icons": [{ "src": "icon.png", "sizes": "96x96" }] }
   ],
   "lang": "fr",
   "categories": ["utilities", "productivity", "tools"],
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
+  "launch_handler": { "client_mode": "navigate-existing" },
   "prefer_related_applications": false
 }
