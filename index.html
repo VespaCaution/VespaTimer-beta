@@ -337,15 +337,15 @@ function boot(){
 setTimeout(function(){
     var params=new URLSearchParams(window.location.search);
     var action=params.get('action');
-if(action==='new'){
-    if(hornets.some(function(h){return h.flights.length>0})){
-        alert('📋 Session en cours sauvegardée. Appuyez sur Nouveau dans Export/Import pour commencer un nouveau relevé.');
-    }
+if(action==='export'){
+    setTimeout(function(){ openModal('exportModal'); },1000);
 }
-    if(action==='map'){
+if(action==='map'){
+    setTimeout(function(){
         var el=document.getElementById('map');
         if(el) el.scrollIntoView({behavior:'smooth'});
-    }
+    },800);
+}
     if(action){ window.history.replaceState({},document.title,window.location.pathname); }
 },1000);
 }
