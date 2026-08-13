@@ -173,23 +173,29 @@ function saveHist(){
 function getHist(){ try { var data=localStorage.getItem('vh_v2'); if(!data) return []; var parsed=JSON.parse(data); if(Array.isArray(parsed)) return parsed; return []; } catch(e){ localStorage.removeItem('vh_v2'); return[]; } }
 function deleteHistEntry(index){ var hist=getHist(); hist.splice(index,1); localStorage.setItem('vh_v2',JSON.stringify(hist)); showHistory(); }
 function resumeHistEntry(entry){ 
-    // Restore pot-à-mèche info
-    surveyLocation=entry.location;
-    document.getElementById('locationInput').value=entry.location.name||'';
+    // Restore pot-à-Mèche location
+    surveyLocation=entry.location||{lat:46.8,lng:6.8,name:''};
+    document.getElementById('locationInput').value=surveyLocation.name||'';
     
-    // Restore inspector and notes
+    // Restore inspector
     inspectorName=entry.inspectorName||'';
-    notes=entry.notes||'';
     document.getElementById('inspectorInput').value=inspectorName;
+    
+    // Restore notes
+    notes=entry.notes||'';
     document.getElementById('notesField').value=notes;
     
     // Restore personal info
     if(entry.personalInfo){
-        personalInfo=entry.personalInfo;
-        document.getElementById('firstName').value=personalInfo.firstName||'';
-        document.getElementById('lastName').value=personalInfo.lastName||'';
-        document.getElementById('phone').value=personalInfo.phone||'';
+        personalInfo.firstName=entry.personalInfo.firstName||'';
+        personalInfo.lastName=entry.personalInfo.lastName||'';
+        personalInfo.phone=entry.personalInfo.phone||'';
+    } else {
+        personalInfo={firstName:'',lastName:'',phone:''};
     }
+    document.getElementById('firstName').value=personalInfo.firstName;
+    document.getElementById('lastName').value=personalInfo.lastName;
+    document.getElementById('phone').value=personalInfo.phone;
     
     // Restore hornets
     if(entry.hornets&&entry.hornets.length>0){ 
@@ -200,10 +206,13 @@ function resumeHistEntry(entry){
             nh.color=h.color||null; 
             return nh; 
         }); 
+    } else {
+        hornets=[createHornet('Frelon 1')];
     }
     
-    // Find entry by date for updating later
+    // Find entry index by date for later updates
     var hist=getHist();
+    resumedFromIndex=-1;
     for(var i=0;i<hist.length;i++){ 
         if(hist[i].date===entry.date){ 
             resumedFromIndex=i; 
@@ -211,6 +220,8 @@ function resumeHistEntry(entry){
         } 
     }
     
+    // Update map and UI
+    document.getElementById('locationDisplay').textContent=surveyLocation.name||surveyLocation.lat.toFixed(5)+', '+surveyLocation.lng.toFixed(5);
     updatePotMarker(); 
     renderAll(); 
     alert(t('pot_resumed')); 
