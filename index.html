@@ -131,7 +131,12 @@
 <script>
     
 var hornets=[],surveyLocation={lat:46.8,lng:6.8,name:''},inspectorName='',notes='',personalInfo={firstName:'',lastName:'',phone:''},currentLang='fr',map=null,potMarker=null,mapLines=[],collapsedCards={},compassActive=false,compassSensor=null;
-var COLORS=['#1a1a1a','#c41e3a','#0d6b35','#6b1a8a','#0d4a8c','#e85d04','#7b2d8b','#00a896','#d00000','#3a0ca3','#f48c06','#0077b6','#9d0208'];
+var COLORS=[
+'#1a1a1a','#c41e3a','#0d6b35','#6b1a8a','#0d4a8c',
+'#e85d04','#7b2d8b','#00a896','#d00000','#3a0ca3',
+'#f48c06','#0077b6','#9d0208','#2d6a4f','#e07a5f',
+'#3d405b','#81b29a','#f2cc8f','#ee9b00','#386641'
+];
 var MAX_HORNETS=13,MAX_HISTORY=200,HISTORY_DAYS=90,usedColors=[],resumedFromIndex=-1,historicalVisibility={};
 
 var translations={
@@ -216,23 +221,30 @@ function importHistory(e){ var f=e.target.files[0]; if(!f) return; var reader=ne
 function resetAll(){ if(!confirm(t('confirm_reset'))) return; saveHist(); resumedFromIndex=-1; localStorage.removeItem('resumed_idx'); hornets=[createHornet('Frelon 1')]; surveyLocation={lat:46.8,lng:6.8,name:''}; inspectorName=''; notes=''; personalInfo={firstName:'',lastName:'',phone:''}; collapsedCards={}; usedColors=[]; document.getElementById('locationInput').value=''; document.getElementById('inspectorInput').value=''; document.getElementById('notesField').value=''; document.getElementById('firstName').value=''; document.getElementById('lastName').value=''; document.getElementById('phone').value=''; document.getElementById('locationDisplay').textContent=''; localStorage.removeItem('vd_v2'); if(map){ map.setView([46.8,6.8],16); } updatePotMarker(); renderAll(); saveAll(); }
 
 // ============ COLOR PICKER ============
+
 function changeHornetColor(hornetId){
     var h=hornets.find(function(x){return x.id===hornetId}); if(!h) return;
-    var available=[]; for(var i=0;i<COLORS.length;i++){ if(usedColors.indexOf(COLORS[i])===-1||(h.color&&h.color===COLORS[i])){ available.push(COLORS[i]); } }
+    var available=[];
+    for(var i=0;i<COLORS.length;i++){
+        var isUsed=false;
+        for(var j=0;j<hornets.length;j++){
+            if(hornets[j].id!==hornetId&&hornets[j].color===COLORS[i]){ isUsed=true; break; }
+        }
+        if(!isUsed){ available.push(COLORS[i]); }
+    }
     var html='<div style="display:flex;flex-wrap:wrap;gap:8px;padding:10px;">';
-    for(var i=0;i<available.length;i++){
-        var isSelected=(h.color===available[i])||(!h.color&&i===hornets.indexOf(h)%COLORS.length&&available[i]===COLORS[hornets.indexOf(h)%COLORS.length]);
-        html+='<div onclick="selectColor('+hornetId+',\''+available[i]+'\')" class="color-dot'+(isSelected?' selected':'')+'" style="background:'+available[i]+';" title="'+available[i]+'"></div>';
+    for(var k=0;k<available.length;k++){
+        var isSelected=(h.color===available[k]);
+        html+='<div onclick="selectColor('+hornetId+',\''+available[k]+'\')" class="color-dot'+(isSelected?' selected':'')+'" style="background:'+available[k]+';" title="'+available[k]+'"></div>';
     }
     html+='</div>';
     document.getElementById('colorPickerContent').innerHTML=html;
     openModal('colorPickerModal');
 }
-function selectColor(hornetId,color){
+    function selectColor(hornetId,color){
     var h=hornets.find(function(x){return x.id===hornetId}); if(!h) return;
     for(var i=0;i<hornets.length;i++){ if(hornets[i].id!==hornetId&&hornets[i].color===color){ alert(t('color_in_use')+' '+hornets[i].name); return; } }
-    if(h.color){ var idx=usedColors.indexOf(h.color); if(idx>-1) usedColors.splice(idx,1); }
-    usedColors.push(color); h.color=color;
+    h.color=color;
     closeModal('colorPickerModal'); saveAll(); renderAll(); if(map) drawAnalysis();
 }
 
