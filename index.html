@@ -126,8 +126,7 @@
 
 var hornets=[],surveyLocation={lat:46.8,lng:6.8,name:''},inspectorName='',notes='',personalInfo={firstName:'',lastName:'',phone:''},currentLang='fr',map=null,potMarker=null,mapLines=[],collapsedCards={},compassActive=false,compassSensor=null;
 var COLORS=['#1a1a1a','#c41e3a','#0d6b35','#6b1a8a','#0d4a8c','#e85d04','#7b2d8b','#00a896','#d00000','#3a0ca3','#f48c06','#0077b6','#9d0208'];
-var MAX_HORNETS=13,MAX_HISTORY=200,HISTORY_DAYS=90,usedColors=[];
-var resumedFromIndex=-1;
+var MAX_HORNETS=13,MAX_HISTORY=200,HISTORY_DAYS=90,usedColors=[],resumedFromIndex=-1;
 
 var translations={
 fr:{personal_info:'Infos personnelles',first_name_placeholder:'Prénom',last_name_placeholder:'Nom',phone_placeholder:'📞 Téléphone',pot_label:'Pot-à-Mèche',location_placeholder:'Nom du lieu ou lat,lng',save_btn:'Enregistrer',inspector_placeholder:'👤 Inspecteur (télémètre)',notes_placeholder:'📝 Notes de relevé...',timer_active:'Chronomètre actif',hornets_title:'Frelons',add_hornet:'Ajouter un frelon',map_title:'Triangulation',gps_btn:'GPS',manual_coords:'Coord.',history_btn:'Historique 90j',no_flights:'Ajoutez des vols pour voir les estimations',stats_title:'Statistiques',export_import:'Export/Import',news:'Nouvelles',options:'Options',about_btn:'À propos',install_app:'Installer l\'app',language:'Langue',contact:'Contact',export_history:'Exporter historique',import_btn:'Importer',import_history:'Importer historique',reset_btn:'Nouveau',about_title_full:'À propos de VespaTimer',about_text:'Bienvenue sur VespaTimer, un site internet qui facilite le travail du pot à mèche, en faisant directement les moyennes et en triangulant le nid selon vos chronométrages.',about_instruction:'',about_refresh:'',about_report:'N\'oubliez pas de signaler vos observations (frelon, nid, etc.) sur :',about_happy:'Bonne chasse ! 🙂',about_footer1:'Requiert une connexion Internet et les services de localisation pour diverses fonctionnalités. Fait par Ben Hupka avec l\'aide de Deepseek.',about_footer2:'Trouvez de plus amples informations sur : <a href="https://stopfrelons.ch" target="_blank">stopfrelons.ch</a>',about_instructions_detail:'Instructions : remplissez les infos en haut, chronométrez les frelons plusieurs fois (minimum 30 secondes par vol), prenez la direction d\'envol avec la boussole, voyez où se trouve potentiellement le nid, exportez dans le format souhaité (PDF pour le télémètre / JSON pour réimporter les données plus tard, GPX/KML pour charger sur des cartes / Export historique pour changer de navigateur ou d\'appareil). Pour sauvegarder dans l\'historique/refaire l\'exercice, appuyez sur Nouveau dans Export/Import.',no_flights_stats:'Aucun vol enregistré',ready:'Prêt',running:'En cours',flights_label:'vols',history_empty:'Aucun historique (90 jours)',history_limit:'⚠️ Max 200 entrées',import_success:'✅ Importé !',import_error:'❌ Fichier invalide',gps_error:'⚠️ GPS impossible',max_hornets:'Maximum 13 frelons',confirm_reset:'Tout effacer ?',delete:'Supprimer',invalid_time:'Temps invalide',keep_one_hornet:'Gardez au moins un frelon.',pot_resumed:'✅ Pot-à-Mèche repris !',color_in_use:'Cette couleur est déjà utilisée par',manual_time:'Ou ajouter un temps (s)',add_manual:'Ajouter',manual_time_placeholder:'ex: 45',hist_pot:'Pot historique',flight_delete:'Supprimer ce vol',start_btn:'DÉMARRER',stop_btn:'ARRÊTER',reset_btn_label:'EFFACER',hist_delete:'Supprimer entrée',hist_resume:'Reprendre ce pot',pot_popup:'Pot-à-Mèche',oval_tooltip:'Ovale: 200m×100m',news_text:'Bienvenue sur la version 2.0 de VespaTimer ! Voici les dernières mises à jour : 13 frelons maximum avec couleurs personnalisables, historique par pot-à-mèche, bouton démarrer/arrêter combiné, boussole intégrée 360°, nettoyage auto après 90 jours, export/import d\'historique, reprise d\'un pot-à-mèche historique, nouvelle interface, romanche (Rumantsch Grischun), contact intégré, réseaux sociaux.'},
@@ -148,64 +147,11 @@ function getNestCoords(h){ return getNestCoordsForHornet(h,surveyLocation); }
 function createOval(center,dirDeg){ var pts=[]; var hw=100,hh=50; var dirRad=(dirDeg*Math.PI)/180; var perpRad=dirRad+Math.PI/2; for(var i=0;i<64;i++){ var angle=(i/64)*2*Math.PI; var rx=hh*Math.cos(angle); var ry=hw*Math.sin(angle); pts.push(L.latLng(center.lat+(rx/111320)*Math.cos(dirRad)-(ry/111320)*Math.cos(perpRad),center.lng+(rx/(111320*Math.cos(center.lat*Math.PI/180)))*Math.sin(dirRad)-(ry/(111320*Math.cos(center.lat*Math.PI/180)))*Math.sin(perpRad))); } return pts; }
 function dl(b,n){ var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=n; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
 function saveAll(){ try { localStorage.setItem('vd_v2',JSON.stringify({hornets:hornets,surveyLocation:surveyLocation,inspectorName:inspectorName,notes:notes,personalInfo:personalInfo,collapsedCards:collapsedCards})); } catch(e){} }
-function loadAll(){ try { var d=JSON.parse(localStorage.getItem('vd_v2')); if(d){ if(d.hornets)hornets=d.hornets; if(d.surveyLocation)surveyLocation=d.surveyLocation; inspectorName=d.inspectorName||''; notes=d.notes||''; if(d.personalInfo)personalInfo=d.personalInfo; if(d.collapsedCards)collapsedCards=d.collapsedCards; } } catch(e){} var sl=localStorage.getItem('vl_v2'); if(sl&&translations[sl])currentLang=sl; document.getElementById('langSelectModal').value=currentLang; document.getElementById('firstName').value=personalInfo.firstName||''; document.getElementById('lastName').value=personalInfo.lastName||''; document.getElementById('phone').value=personalInfo.phone||''; if(!hornets.length) hornets.push(createHornet('Frelon 1')); usedColors=[]; for(var i=0;i<hornets.length;i++){ if(hornets[i].color) usedColors.push(hornets[i].color); } }
+function loadAll(){ try { var d=JSON.parse(localStorage.getItem('vd_v2')); if(d){ if(d.hornets)hornets=d.hornets; if(d.surveyLocation)surveyLocation=d.surveyLocation; inspectorName=d.inspectorName||''; notes=d.notes||''; if(d.personalInfo)personalInfo=d.personalInfo; if(d.collapsedCards)collapsedCards=d.collapsedCards; } } catch(e){} var sl=localStorage.getItem('vl_v2'); if(sl&&translations[sl])currentLang=sl; document.getElementById('langSelectModal').value=currentLang; document.getElementById('firstName').value=personalInfo.firstName||''; document.getElementById('lastName').value=personalInfo.lastName||''; document.getElementById('phone').value=personalInfo.phone||''; if(!hornets.length) hornets.push(createHornet('Frelon 1')); usedColors=[]; for(var i=0;i<hornets.length;i++){ if(hornets[i].color) usedColors.push(hornets[i].color); } var savedResumed=localStorage.getItem('resumed_idx'); if(savedResumed){ resumedFromIndex=parseInt(savedResumed); } }
+function saveHist(){ var hist=[]; try { hist=JSON.parse(localStorage.getItem('vh_v2')||'[]'); } catch(e){} var newEntry={date:new Date().toISOString(),location:{lat:surveyLocation.lat,lng:surveyLocation.lng,name:surveyLocation.name},hornets:hornets.filter(function(h){return h.flights.length>0}).map(function(h){return {name:h.name,direction:h.direction,flights:h.flights.slice(),color:h.color};}),notes:notes,inspectorName:inspectorName,personalInfo:{firstName:personalInfo.firstName,lastName:personalInfo.lastName,phone:personalInfo.phone}}; if(resumedFromIndex>=0&&resumedFromIndex<hist.length){ hist[resumedFromIndex]=newEntry; } else { hist.push(newEntry); } if(hist.length>MAX_HISTORY) hist=hist.slice(-MAX_HISTORY); var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; hist=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); try { localStorage.setItem('vh_v2',JSON.stringify(hist)); } catch(e){} localStorage.setItem('resumed_idx',resumedFromIndex); }
 function getHist(){ try { var data=localStorage.getItem('vh_v2'); if(!data) return []; var parsed=JSON.parse(data); if(Array.isArray(parsed)) return parsed; return []; } catch(e){ localStorage.removeItem('vh_v2'); return[]; } }
 function deleteHistEntry(index){ var hist=getHist(); hist.splice(index,1); localStorage.setItem('vh_v2',JSON.stringify(hist)); showHistory(); }
-function showHistory(){ 
-    var hist=getHist(); 
-    var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; 
-    var recent=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); 
-    drawAnalysis(recent); 
-    var panel=document.getElementById('historyPanel'); 
-    panel.style.display='block'; 
-    panel.innerHTML='<div style="font-size:0.8rem;color:#c47b6b;margin-bottom:8px;">'+t('history_limit')+' ('+recent.length+'/'+MAX_HISTORY+')</div>'; 
-    if(recent.length){ 
-        var html=''; 
-        var startIdx=hist.length-recent.length;
-        for(var i=recent.length-1;i>=0;i--){ 
-            var e=recent[i]; 
-            var actualIndex=startIdx+i;
-            html+='<div class="history-item"><strong>📅 '+new Date(e.date).toLocaleDateString()+'</strong><br>🐝 '+(e.hornets?e.hornets.length:0)+' frelons | '+(e.hornets?e.hornets.map(function(h){return h.name}).join(', '):'?')+'<br>📍 '+(e.location&&e.location.name?e.location.name:'?')+'<div class="history-actions"><button class="btn-gold btn-sm" onclick="resumeHistEntryByIndex('+actualIndex+')">🔄 '+t('hist_resume')+'</button><button class="btn-red btn-sm" onclick="deleteHistEntry('+actualIndex+')">🗑️ '+t('hist_delete')+'</button></div></div>'; 
-        } 
-        panel.innerHTML+=html; 
-    } else { 
-        panel.innerHTML+='<div class="history-item">📭 '+t('history_empty')+'</div>'; 
-    } 
-}
-
-function resumeHistEntryByIndex(index){ 
-    var hist=getHist(); 
-    if(index<0||index>=hist.length){ alert('Entrée non trouvée'); return; } 
-    var entry=hist[index]; 
-    // Restore all data
-    surveyLocation=entry.location||{lat:46.8,lng:6.8,name:''};
-    inspectorName=entry.inspectorName||'';
-    notes=entry.notes||'';
-    if(entry.personalInfo){ personalInfo=entry.personalInfo; }
-    // Update form fields
-    document.getElementById('locationInput').value=surveyLocation.name||'';
-    document.getElementById('inspectorInput').value=inspectorName;
-    document.getElementById('notesField').value=notes;
-    document.getElementById('firstName').value=personalInfo.firstName||'';
-    document.getElementById('lastName').value=personalInfo.lastName||'';
-    document.getElementById('phone').value=personalInfo.phone||'';
-    // Restore hornets
-    if(entry.hornets&&entry.hornets.length>0){
-        hornets=entry.hornets.map(function(h){ 
-            var nh=createHornet(h.name||'Frelon'); 
-            nh.direction=h.direction||0; 
-            nh.flights=h.flights||[]; 
-            nh.color=h.color||null; 
-            return nh; 
-        }); 
-    } else {
-        hornets=[createHornet('Frelon 1')];
-    }
-    resumedFromIndex=index;
-    updatePotMarker(); 
-    renderAll(); 
-    alert(t('pot_resumed')); 
-}
+function resumeHistEntryByIndex(index){ var hist=getHist(); if(index<0||index>=hist.length){ alert('Entrée non trouvée'); return; } var entry=hist[index]; surveyLocation=entry.location||{lat:46.8,lng:6.8,name:''}; inspectorName=entry.inspectorName||''; notes=entry.notes||''; if(entry.personalInfo){ personalInfo=entry.personalInfo; } document.getElementById('locationInput').value=surveyLocation.name||''; document.getElementById('locationDisplay').textContent=surveyLocation.name||surveyLocation.lat.toFixed(5)+', '+surveyLocation.lng.toFixed(5); document.getElementById('inspectorInput').value=inspectorName; document.getElementById('notesField').value=notes; document.getElementById('firstName').value=personalInfo.firstName||''; document.getElementById('lastName').value=personalInfo.lastName||''; document.getElementById('phone').value=personalInfo.phone||''; if(entry.hornets&&entry.hornets.length>0){ hornets=entry.hornets.map(function(h){ var nh=createHornet(h.name||'Frelon'); nh.direction=h.direction||0; nh.flights=h.flights||[]; nh.color=h.color||null; return nh; }); } else { hornets=[createHornet('Frelon 1')]; } resumedFromIndex=index; localStorage.setItem('resumed_idx',resumedFromIndex); updatePotMarker(); renderAll(); alert(t('pot_resumed')); }
 function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; if(id==='compassModal') stopCompass(); }
 function openCompassModal(){ openModal('compassModal'); startCompass(); setTimeout(drawGraduations,100); }
@@ -247,25 +193,7 @@ function drawAnalysis(histData){
     }}}}}
     document.getElementById('predictionPanel').innerHTML=preds.length?'🔍 '+preds.map(function(p){return p.name+' → ~'+p.dist.toFixed(0)+'m'}).join(' · '):'⚠️ '+t('no_flights');
 }
-function showHistory(){ 
-    var hist=getHist(); 
-    var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; 
-    var recent=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); 
-    drawAnalysis(recent); 
-    var panel=document.getElementById('historyPanel'); 
-    panel.style.display='block'; 
-    panel.innerHTML='<div style="font-size:0.8rem;color:#c47b6b;margin-bottom:8px;">'+t('history_limit')+' ('+recent.length+'/'+MAX_HISTORY+')</div>'; 
-    if(recent.length){ 
-        var html=''; 
-        for(var i=recent.length-1;i>=0;i--){ 
-            var e=recent[i]; 
-            html+='<div class="history-item"><strong>📅 '+new Date(e.date).toLocaleDateString()+'</strong><br>🐝 '+(e.hornets?e.hornets.length:0)+' frelons | '+(e.hornets?e.hornets.map(function(h){return h.name}).join(', '):'?')+'<br>📍 '+(e.location&&e.location.name?e.location.name:'?')+'<div class="history-actions"><button class="btn-gold btn-sm" onclick="resumeHistEntry(getHist()['+i+'])">🔄 '+t('hist_resume')+'</button><button class="btn-red btn-sm" onclick="deleteHistEntry('+i+')">🗑️ '+t('hist_delete')+'</button></div></div>'; 
-        } 
-        panel.innerHTML+=html; 
-    } else { 
-        panel.innerHTML+='<div class="history-item">📭 '+t('history_empty')+'</div>'; 
-    } 
-}
+function showHistory(){ var hist=getHist(); var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; var recent=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); drawAnalysis(recent); var panel=document.getElementById('historyPanel'); panel.style.display='block'; panel.innerHTML='<div style="font-size:0.8rem;color:#c47b6b;margin-bottom:8px;">'+t('history_limit')+' ('+recent.length+'/'+MAX_HISTORY+')</div>'; if(recent.length){ var html=''; var startIdx=hist.length-recent.length; for(var i=recent.length-1;i>=0;i--){ var e=recent[i]; var actualIndex=startIdx+i; html+='<div class="history-item"><strong>📅 '+new Date(e.date).toLocaleDateString()+'</strong><br>🐝 '+(e.hornets?e.hornets.length:0)+' frelons | '+(e.hornets?e.hornets.map(function(h){return h.name}).join(', '):'?')+'<br>📍 '+(e.location&&e.location.name?e.location.name:'?')+'<div class="history-actions"><button class="btn-gold btn-sm" onclick="resumeHistEntryByIndex('+actualIndex+')">🔄 '+t('hist_resume')+'</button><button class="btn-red btn-sm" onclick="deleteHistEntry('+actualIndex+')">🗑️ '+t('hist_delete')+'</button></div></div>'; } panel.innerHTML+=html; } else { panel.innerHTML+='<div class="history-item">📭 '+t('history_empty')+'</div>'; } }
 var deferredPrompt;
 window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); deferredPrompt=e; document.getElementById('installBtn2').style.display='block'; });
 var isApple=/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent);
@@ -278,27 +206,7 @@ function exportKML(){ closeModal('exportModal'); var k='<?xml version="1.0"?><km
 function exportHistory(){ closeModal('exportModal'); var hist=getHist(); dl(new Blob([JSON.stringify(hist,null,2)],{type:'application/json'}),'vespatimer_history.json'); }
 function importData(e){ var f=e.target.files[0]; if(!f) return; var reader=new FileReader(); reader.onload=function(ev){ try{ var d=JSON.parse(ev.target.result); if(d.hornets)hornets=d.hornets.map(function(h){ var nh=createHornet(h.name||'Frelon'); nh.direction=h.direction||0; nh.flights=h.flights||[]; nh.color=h.color||null; return nh; }); if(d.surveyLocation)surveyLocation=d.surveyLocation; inspectorName=d.inspectorName||''; notes=d.notes||''; if(d.personalInfo)personalInfo=d.personalInfo; updatePotMarker(); renderAll(); alert(t('import_success')); }catch(ex){ alert(t('import_error')); } }; reader.readAsText(f); e.target.value=''; }
 function importHistory(e){ var f=e.target.files[0]; if(!f) return; var reader=new FileReader(); reader.onload=function(ev){ try{ var d=JSON.parse(ev.target.result); if(Array.isArray(d)){ localStorage.setItem('vh_v2',JSON.stringify(d)); alert('✅ Historique importé!'); showHistory(); } }catch(ex){ alert(t('import_error')); } }; reader.readAsText(f); e.target.value=''; }
-function resetAll(){ 
-    if(!confirm(t('confirm_reset'))) return; 
-    saveHist(); 
-    resumedFromIndex=-1; 
-    hornets=[createHornet('Frelon 1')]; 
-    surveyLocation={lat:46.8,lng:6.8,name:''}; 
-    inspectorName=''; 
-    notes=''; 
-    personalInfo={firstName:'',lastName:'',phone:''}; 
-    collapsedCards={}; 
-    usedColors=[]; 
-    document.getElementById('locationInput').value=''; 
-    document.getElementById('inspectorInput').value=''; 
-    document.getElementById('notesField').value=''; 
-    document.getElementById('firstName').value=''; 
-    document.getElementById('lastName').value=''; 
-    document.getElementById('phone').value=''; 
-    document.getElementById('locationDisplay').textContent=''; 
-    updatePotMarker(); 
-    renderAll(); 
-}
+function resetAll(){ if(!confirm(t('confirm_reset'))) return; saveHist(); resumedFromIndex=-1; localStorage.removeItem('resumed_idx'); hornets=[createHornet('Frelon 1')]; surveyLocation={lat:46.8,lng:6.8,name:''}; inspectorName=''; notes=''; personalInfo={firstName:'',lastName:'',phone:''}; collapsedCards={}; usedColors=[]; document.getElementById('locationInput').value=''; document.getElementById('inspectorInput').value=''; document.getElementById('notesField').value=''; document.getElementById('firstName').value=''; document.getElementById('lastName').value=''; document.getElementById('phone').value=''; document.getElementById('locationDisplay').textContent=''; localStorage.removeItem('vd_v2'); if(map){ map.setView([46.8,6.8],16); } updatePotMarker(); renderAll(); saveAll(); }
 
 // ============ COLOR PICKER ============
 function changeHornetColor(hornetId){
