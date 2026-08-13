@@ -129,10 +129,10 @@
 <div class="modal-overlay" id="colorPickerModal"><div class="modal" style="max-width:350px;"><button class="modal-close" onclick="closeModal('colorPickerModal')">✕</button><h3>🎨 Choisir une couleur</h3><div id="colorPickerContent"></div></div></div>
 
 <script>
-
+    
 var hornets=[],surveyLocation={lat:46.8,lng:6.8,name:''},inspectorName='',notes='',personalInfo={firstName:'',lastName:'',phone:''},currentLang='fr',map=null,potMarker=null,mapLines=[],collapsedCards={},compassActive=false,compassSensor=null;
 var COLORS=['#1a1a1a','#c41e3a','#0d6b35','#6b1a8a','#0d4a8c','#e85d04','#7b2d8b','#00a896','#d00000','#3a0ca3','#f48c06','#0077b6','#9d0208'];
-var MAX_HORNETS=13,MAX_HISTORY=200,HISTORY_DAYS=90,usedColors=[],resumedFromIndex=-1;
+var MAX_HORNETS=13,MAX_HISTORY=200,HISTORY_DAYS=90,usedColors=[],resumedFromIndex=-1,historicalVisibility={};
 
 var translations={
 fr:{personal_info:'Infos personnelles',first_name_placeholder:'Prénom',last_name_placeholder:'Nom',phone_placeholder:'📞 Téléphone',pot_label:'Pot-à-Mèche',location_placeholder:'Nom du lieu ou lat,lng',save_btn:'Enregistrer',inspector_placeholder:'👤 Inspecteur (télémètre)',notes_placeholder:'📝 Notes de relevé...',timer_active:'Chronomètre actif',hornets_title:'Frelons',add_hornet:'Ajouter un frelon',map_title:'Triangulation',gps_btn:'GPS',manual_coords:'Coord.',history_btn:'Historique 90j',no_flights:'Ajoutez des vols pour voir les estimations',stats_title:'Statistiques',export_import:'Export/Import',news:'Nouvelles',options:'Options',about_btn:'À propos',install_app:'Installer l\'app',language:'Langue',contact:'Contact',export_history:'Exporter historique',import_btn:'Importer',import_history:'Importer historique',reset_btn:'Nouveau',about_title_full:'À propos de VespaTimer',about_text:'Bienvenue sur VespaTimer, un site internet qui facilite le travail du pot à mèche, en faisant directement les moyennes et en triangulant le nid selon vos chronométrages.',about_instruction:'',about_refresh:'',about_report:'N\'oubliez pas de signaler vos observations (frelon, nid, etc.) sur :',about_happy:'Bonne chasse ! 🙂',about_footer1:'Requiert une connexion Internet et les services de localisation pour diverses fonctionnalités. Fait par Ben Hupka avec l\'aide de Deepseek.',about_footer2:'Trouvez de plus amples informations sur : <a href="https://stopfrelons.ch" target="_blank">stopfrelons.ch</a>',about_instructions_detail:'Instructions : remplissez les infos en haut, chronométrez les frelons plusieurs fois (minimum 30 secondes par vol), prenez la direction d\'envol avec la boussole, voyez où se trouve potentiellement le nid, exportez dans le format souhaité (PDF pour le télémètre / JSON pour réimporter les données plus tard, GPX/KML pour charger sur des cartes / Export historique pour changer de navigateur ou d\'appareil). Pour sauvegarder dans l\'historique/refaire l\'exercice, appuyez sur Nouveau dans Export/Import.',no_flights_stats:'Aucun vol enregistré',ready:'Prêt',running:'En cours',flights_label:'vols',history_empty:'Aucun historique (90 jours)',history_limit:'⚠️ Max 200 entrées',import_success:'✅ Importé !',import_error:'❌ Fichier invalide',gps_error:'⚠️ GPS impossible',max_hornets:'Maximum 13 frelons',confirm_reset:'Tout effacer ?',delete:'Supprimer',invalid_time:'Temps invalide',keep_one_hornet:'Gardez au moins un frelon.',pot_resumed:'✅ Pot-à-Mèche repris !',color_in_use:'Cette couleur est déjà utilisée par',manual_time:'Ou ajouter un temps (s)',add_manual:'Ajouter',manual_time_placeholder:'ex: 45',hist_pot:'Pot historique',flight_delete:'Supprimer ce vol',start_btn:'DÉMARRER',stop_btn:'ARRÊTER',reset_btn_label:'EFFACER',hist_delete:'Supprimer entrée',hist_resume:'Reprendre ce pot',pot_popup:'Pot-à-Mèche',oval_tooltip:'Ovale: 200m×100m',news_text:'Bienvenue sur la version 2.0 de VespaTimer ! Voici les dernières mises à jour : 13 frelons maximum avec couleurs personnalisables, historique par pot-à-mèche, bouton démarrer/arrêter combiné, boussole intégrée 360°, nettoyage auto après 90 jours, export/import d\'historique, reprise d\'un pot-à-mèche historique, nouvelle interface, romanche (Rumantsch Grischun), contact intégré, réseaux sociaux.'},
@@ -157,35 +157,8 @@ function loadAll(){ try { var d=JSON.parse(localStorage.getItem('vd_v2')); if(d)
 function saveHist(){ var hist=[]; try { hist=JSON.parse(localStorage.getItem('vh_v2')||'[]'); } catch(e){} var newEntry={date:new Date().toISOString(),location:{lat:surveyLocation.lat,lng:surveyLocation.lng,name:surveyLocation.name},hornets:hornets.filter(function(h){return h.flights.length>0}).map(function(h){return {name:h.name,direction:h.direction,flights:h.flights.slice(),color:h.color};}),notes:notes,inspectorName:inspectorName,personalInfo:{firstName:personalInfo.firstName,lastName:personalInfo.lastName,phone:personalInfo.phone}}; if(resumedFromIndex>=0&&resumedFromIndex<hist.length){ hist[resumedFromIndex]=newEntry; } else { hist.push(newEntry); } if(hist.length>MAX_HISTORY) hist=hist.slice(-MAX_HISTORY); var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; hist=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); try { localStorage.setItem('vh_v2',JSON.stringify(hist)); } catch(e){} localStorage.setItem('resumed_idx',resumedFromIndex); }
 function getHist(){ try { var data=localStorage.getItem('vh_v2'); if(!data) return []; var parsed=JSON.parse(data); if(Array.isArray(parsed)) return parsed; return []; } catch(e){ localStorage.removeItem('vh_v2'); return[]; } }
 function deleteHistEntry(index){ var hist=getHist(); hist.splice(index,1); localStorage.setItem('vh_v2',JSON.stringify(hist)); showHistory(); }
-function resumeHistEntryByIndex(index){ 
-    var hist=getHist(); 
-    if(index<0||index>=hist.length) return; 
-    var entry=hist[index]; 
-    surveyLocation=entry.location||{lat:46.8,lng:6.8,name:''}; 
-    inspectorName=entry.inspectorName||''; 
-    notes=entry.notes||''; 
-    if(entry.personalInfo){ personalInfo=entry.personalInfo; } 
-    document.getElementById('locationInput').value=surveyLocation.name||''; 
-    document.getElementById('inspectorInput').value=inspectorName; 
-    document.getElementById('notesField').value=notes; 
-    document.getElementById('firstName').value=personalInfo.firstName||''; 
-    document.getElementById('lastName').value=personalInfo.lastName||''; 
-    document.getElementById('phone').value=personalInfo.phone||''; 
-    if(entry.hornets&&entry.hornets.length>0){ 
-        hornets=entry.hornets.map(function(h){ 
-            var nh=createHornet(h.name||'Frelon'); 
-            nh.direction=h.direction||0; 
-            nh.flights=h.flights||[]; 
-            nh.color=h.color||null; 
-            return nh; 
-        }); 
-    } else { hornets=[createHornet('Frelon 1')]; } 
-    resumedFromIndex=index; 
-    localStorage.setItem('resumed_idx',resumedFromIndex); 
-    updatePotMarker(); 
-    renderAll(); 
-    alert(t('pot_resumed')); 
-} 
+function resumeHistEntryByIndex(index){ var hist=getHist(); if(index<0||index>=hist.length){ alert('Entrée non trouvée'); return; } var entry=hist[index]; surveyLocation=entry.location||{lat:46.8,lng:6.8,name:''}; inspectorName=entry.inspectorName||''; notes=entry.notes||''; if(entry.personalInfo){ personalInfo=entry.personalInfo; } document.getElementById('locationInput').value=surveyLocation.name||''; document.getElementById('locationDisplay').textContent=surveyLocation.name||surveyLocation.lat.toFixed(5)+', '+surveyLocation.lng.toFixed(5); document.getElementById('inspectorInput').value=inspectorName; document.getElementById('notesField').value=notes; document.getElementById('firstName').value=personalInfo.firstName||''; document.getElementById('lastName').value=personalInfo.lastName||''; document.getElementById('phone').value=personalInfo.phone||''; if(entry.hornets&&entry.hornets.length>0){ hornets=entry.hornets.map(function(h){ var nh=createHornet(h.name||'Frelon'); nh.direction=h.direction||0; nh.flights=h.flights||[]; nh.color=h.color||null; return nh; }); } else { hornets=[createHornet('Frelon 1')]; } resumedFromIndex=index; localStorage.setItem('resumed_idx',resumedFromIndex); updatePotMarker(); renderAll(); alert(t('pot_resumed')); }
+function toggleHistoricalFlights(entryDate){ historicalVisibility[entryDate]=!historicalVisibility[entryDate]; drawAnalysis(getHist()); }
 function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; if(id==='compassModal') stopCompass(); }
 function openCompassModal(){ openModal('compassModal'); startCompass(); setTimeout(drawGraduations,100); }
@@ -219,8 +192,8 @@ function drawAnalysis(histData){
         var m=L.circleMarker(nestPt,{radius:7,color:c,fillOpacity:0.7}).addTo(map); m.bindPopup('<b>'+h.name+'</b><br>~'+nd.distance.toFixed(0)+'m<br>🧭 '+h.direction+'°<br>⬭ '+t('oval_tooltip')); mapLines.push(m);
         preds.push({name:h.name,point:nestPt,dist:nd.distance,direction:h.direction});
     }
-    if(histData&&histData.length){ for(var ei=0;ei<histData.length;ei++){ var e=histData[ei]; if(!e.location||!e.hornets) continue; var hl=e.location,hp=L.latLng(hl.lat,hl.lng); var hpi=L.divIcon({html:'📍',iconSize:[20,20],iconAnchor:[10,10],className:''}); var hpm=L.marker([hl.lat,hl.lng],{icon:hpi,opacity:0.7}).addTo(map); hpm.bindPopup('<b>'+t('hist_pot')+'</b><br>📅 '+new Date(e.date).toLocaleDateString()+'<br>🐝 '+(e.hornets?e.hornets.length:0)+' frelons'); mapLines.push(hpm);
-        if(e.hornets&&e.hornets.length){ for(var hi=0;hi<e.hornets.length;hi++){ var hh=e.hornets[hi]; if(!hh.flights||!hh.flights.length) continue; var avg=0; for(var fi=0;fi<hh.flights.length;fi++) avg+=hh.flights[fi]; avg=avg/hh.flights.length; var dm=(avg-30)*2.5; if(dm>0){ var c2=hh.color||'#999'; var dr=(hh.direction*Math.PI)/180; var nh=L.latLng(hl.lat+(dm/111320)*Math.cos(dr),hl.lng+(dm/(111320*Math.cos(hl.lat*Math.PI/180)))*Math.sin(dr));
+    if(histData&&histData.length){ for(var ei=0;ei<histData.length;ei++){ var e=histData[ei]; if(!e.location||!e.hornets) continue; var hl=e.location,hp=L.latLng(hl.lat,hl.lng); var hpi=L.divIcon({html:'📍',iconSize:[20,20],iconAnchor:[10,10],className:''}); var hpm=L.marker([hl.lat,hl.lng],{icon:hpi,opacity:0.7}).addTo(map); hpm.bindPopup('<b>'+t('hist_pot')+'</b><br>📅 '+new Date(e.date).toLocaleDateString()+'<br>🐝 '+(e.hornets?e.hornets.length:0)+' frelons<br><small>👆 Touchez pour afficher/masquer</small>'); hpm.on('click',function(){ toggleHistoricalFlights(e.date); }); mapLines.push(hpm);
+        if(e.hornets&&e.hornets.length&&historicalVisibility[e.date]!==false){ for(var hi=0;hi<e.hornets.length;hi++){ var hh=e.hornets[hi]; if(!hh.flights||!hh.flights.length) continue; var avg=0; for(var fi=0;fi<hh.flights.length;fi++) avg+=hh.flights[fi]; avg=avg/hh.flights.length; var dm=(avg-30)*2.5; if(dm>0){ var c2=hh.color||'#999'; var dr=(hh.direction*Math.PI)/180; var nh=L.latLng(hl.lat+(dm/111320)*Math.cos(dr),hl.lng+(dm/(111320*Math.cos(hl.lat*Math.PI/180)))*Math.sin(dr));
         mapLines.push(L.polyline([hp,nh],{color:c2,weight:2,dashArray:'3,7',opacity:0.6}).addTo(map));
         mapLines.push(L.polygon(createOval(nh,hh.direction),{color:c2,fillOpacity:0.08,weight:1,dashArray:'3,5',opacity:0.5}).addTo(map));
         var hm=L.circleMarker(nh,{radius:4,color:c2,fillOpacity:0.5,weight:1}).addTo(map); hm.bindPopup('<b>Hist: '+hh.name+'</b><br>📅 '+new Date(e.date).toLocaleDateString()+'<br>⬭ '+t('oval_tooltip')); mapLines.push(hm);
