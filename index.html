@@ -235,12 +235,6 @@ function changeHornetColor(hornetId){
 }
     function selectColor(hornetId,color){
     var h=hornets.find(function(x){return x.id===hornetId}); if(!h) return;
-    for(var i=0;i<hornets.length;i++){ 
-        if(hornets[i].id!==hornetId&&hornets[i].color===color){ 
-            alert(t('color_in_use')+' '+hornets[i].name); 
-            return; 
-        } 
-    }
     h.color=color;
     closeModal('colorPickerModal'); saveAll(); renderAll(); if(map) drawAnalysis();
     }
