@@ -158,8 +158,8 @@ function saveHist(){ var hist=[]; try { hist=JSON.parse(localStorage.getItem('vh
 function getHist(){ try { var data=localStorage.getItem('vh_v2'); if(!data) return []; var parsed=JSON.parse(data); if(Array.isArray(parsed)) return parsed; return []; } catch(e){ localStorage.removeItem('vh_v2'); return[]; } }
 function deleteHistEntry(index){ var hist=getHist(); hist.splice(index,1); localStorage.setItem('vh_v2',JSON.stringify(hist)); showHistory(); }
 function resumeHistEntryByIndex(index){ 
-    var hist=getHist();
-    alert('Entry data: '+JSON.stringify(hist[index]));
+function resumeHistEntryByIndex(index){ 
+    var hist=getHist(); 
     if(index<0||index>=hist.length){ alert('Entrée non trouvée'); return; } 
     var entry=hist[index]; 
     surveyLocation=entry.location||{lat:46.8,lng:6.8,name:''}; 
