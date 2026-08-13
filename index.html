@@ -68,6 +68,8 @@
         .color-dot.selected { border-color:#000; }
         button, a, [onclick] { -webkit-tap-highlight-color:transparent; }
         .header a:active { transform:scale(0.9); opacity:0.7; transition:transform 0.1s,opacity 0.1s; }
+        .map-toggle-btn { background:none; border:none; cursor:pointer; font-size:0.9rem; padding:0 4px; transition:transform 0.3s; }
+        .map-toggle-btn.open { transform:rotate(90deg); }
     </style>
 </head>
 <body>
@@ -112,7 +114,14 @@
 <div class="card">
     <h2>🗺️ <span data-lang="map_title">Triangulation</span></h2>
     <div id="map"></div>
-    <div class="flex-row" style="margin-top:8px;"><button class="btn-grey btn-sm" onclick="getGPS()">📍 <span data-lang="gps_btn">GPS</span></button><button class="btn-grey btn-sm" onclick="manualCoords()">✍️ <span data-lang="manual_coords">Coord.</span></button><button class="btn-gold btn-sm" onclick="showHistory()">📋 <span data-lang="history_btn">Historique 90j</span></button></div>
+    <div class="flex-row" style="margin-top:8px;align-items:center;">
+    <button class="map-toggle-btn open" id="mapToggleBtn" onclick="toggleMapButtons()">▶</button>
+    <span id="mapButtonsContainer">
+        <button class="btn-grey btn-sm" onclick="getGPS()">📍 GPS</button>
+        <button class="btn-grey btn-sm" onclick="manualCoords()">✍️ Coord.</button>
+        <button class="btn-gold btn-sm" onclick="showHistory()">📋 Historique 90j</button>
+    </span>
+    </div>    
     <div id="predictionPanel" style="margin-top:8px;padding:8px;background:#f9f4e8;border-radius:12px;font-size:0.85rem;">⚠️ <span data-lang="no_flights">Ajoutez des vols pour voir les estimations</span></div>
     <div id="historyPanel"></div>
 </div>
@@ -185,6 +194,12 @@ function addHornet(){ if(hornets.length>=MAX_HORNETS){ alert(t('max_hornets')); 
 function setLocation(){ var v=document.getElementById('locationInput').value.trim(); if(!v) return; surveyLocation.name=v; var m=v.match(/([-+]?\d+\.?\d*)\s*[,;]\s*([-+]?\d+\.?\d*)/); if(m){ surveyLocation.lat=parseFloat(m[1]); surveyLocation.lng=parseFloat(m[2]); } updatePotMarker(); renderAll(); }
 function getGPS(){ if(!navigator.geolocation){ alert(t('gps_error')); return; } navigator.geolocation.getCurrentPosition(function(p){ surveyLocation.lat=p.coords.latitude; surveyLocation.lng=p.coords.longitude; document.getElementById('locationInput').value=p.coords.latitude.toFixed(5)+', '+p.coords.longitude.toFixed(5); updatePotMarker(); renderAll(); },function(){ alert(t('gps_error')); },{enableHighAccuracy:true,timeout:10000}); }
 function manualCoords(){ var lat=prompt('Latitude:',surveyLocation.lat.toFixed(5)); if(lat===null) return; var lng=prompt('Longitude:',surveyLocation.lng.toFixed(5)); if(lng===null) return; surveyLocation.lat=parseFloat(lat); surveyLocation.lng=parseFloat(lng); document.getElementById('locationInput').value=lat+', '+lng; updatePotMarker(); renderAll(); }
+function toggleMapButtons(){
+    var container=document.getElementById('mapButtonsContainer');
+    var btn=document.getElementById('mapToggleBtn');
+    if(container.style.display==='none'){ container.style.display='inline'; btn.classList.add('open'); }
+    else { container.style.display='none'; btn.classList.remove('open'); }
+}
 function initMap(){ var el=document.getElementById('map'); if(!el){ setTimeout(initMap,500); return; } if(map){ map.invalidateSize(); return; } map=L.map('map',{zoomControl:true}).setView([surveyLocation.lat,surveyLocation.lng],16); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(map); updatePotMarker(); setTimeout(function(){ if(map) map.invalidateSize(); },400); }
 function updatePotMarker(){ if(!map) return; if(potMarker) map.removeLayer(potMarker); var beeIcon=L.divIcon({html:'🐝',iconSize:[30,30],iconAnchor:[15,15],className:''}); potMarker=L.marker([surveyLocation.lat,surveyLocation.lng],{draggable:true,icon:beeIcon}).addTo(map).bindPopup('📍 '+t('pot_popup')).openPopup(); potMarker.on('dragend',function(e){ surveyLocation.lat=e.target.getLatLng().lat; surveyLocation.lng=e.target.getLatLng().lng; document.getElementById('locationDisplay').textContent=surveyLocation.lat.toFixed(5)+', '+surveyLocation.lng.toFixed(5); saveAll(); drawAnalysis(); }); }
 function drawAnalysis(histData){
