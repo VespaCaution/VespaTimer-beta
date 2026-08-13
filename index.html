@@ -149,56 +149,48 @@ function createOval(center,dirDeg){ var pts=[]; var hw=100,hh=50; var dirRad=(di
 function dl(b,n){ var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=n; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
 function saveAll(){ try { localStorage.setItem('vd_v2',JSON.stringify({hornets:hornets,surveyLocation:surveyLocation,inspectorName:inspectorName,notes:notes,personalInfo:personalInfo,collapsedCards:collapsedCards})); } catch(e){} }
 function loadAll(){ try { var d=JSON.parse(localStorage.getItem('vd_v2')); if(d){ if(d.hornets)hornets=d.hornets; if(d.surveyLocation)surveyLocation=d.surveyLocation; inspectorName=d.inspectorName||''; notes=d.notes||''; if(d.personalInfo)personalInfo=d.personalInfo; if(d.collapsedCards)collapsedCards=d.collapsedCards; } } catch(e){} var sl=localStorage.getItem('vl_v2'); if(sl&&translations[sl])currentLang=sl; document.getElementById('langSelectModal').value=currentLang; document.getElementById('firstName').value=personalInfo.firstName||''; document.getElementById('lastName').value=personalInfo.lastName||''; document.getElementById('phone').value=personalInfo.phone||''; if(!hornets.length) hornets.push(createHornet('Frelon 1')); usedColors=[]; for(var i=0;i<hornets.length;i++){ if(hornets[i].color) usedColors.push(hornets[i].color); } }
-function saveHist(){ 
-    var hist=[]; 
-    try { hist=JSON.parse(localStorage.getItem('vh_v2')||'[]'); } catch(e){} 
-    var newEntry={
-        date:new Date().toISOString(),
-        location:{lat:surveyLocation.lat,lng:surveyLocation.lng,name:surveyLocation.name},
-        hornets:hornets.filter(function(h){return h.flights.length>0}).map(function(h){return {name:h.name,direction:h.direction,flights:h.flights.slice(),color:h.color};}),
-        notes:notes,
-        inspectorName:inspectorName,
-        personalInfo:{firstName:personalInfo.firstName,lastName:personalInfo.lastName,phone:personalInfo.phone}
-    }; 
-    if(resumedFromIndex>=0&&resumedFromIndex<hist.length){ 
-        hist[resumedFromIndex]=newEntry; 
-    } else { 
-        hist.push(newEntry); 
-    } 
-    if(hist.length>MAX_HISTORY) hist=hist.slice(-MAX_HISTORY); 
-    var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; 
-    hist=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); 
-    try { localStorage.setItem('vh_v2',JSON.stringify(hist)); } catch(e){} 
-}
 function getHist(){ try { var data=localStorage.getItem('vh_v2'); if(!data) return []; var parsed=JSON.parse(data); if(Array.isArray(parsed)) return parsed; return []; } catch(e){ localStorage.removeItem('vh_v2'); return[]; } }
 function deleteHistEntry(index){ var hist=getHist(); hist.splice(index,1); localStorage.setItem('vh_v2',JSON.stringify(hist)); showHistory(); }
-function resumeHistEntry(entry){ 
-    // Restore pot-à-Mèche location
+function showHistory(){ 
+    var hist=getHist(); 
+    var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; 
+    var recent=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); 
+    drawAnalysis(recent); 
+    var panel=document.getElementById('historyPanel'); 
+    panel.style.display='block'; 
+    panel.innerHTML='<div style="font-size:0.8rem;color:#c47b6b;margin-bottom:8px;">'+t('history_limit')+' ('+recent.length+'/'+MAX_HISTORY+')</div>'; 
+    if(recent.length){ 
+        var html=''; 
+        var startIdx=hist.length-recent.length;
+        for(var i=recent.length-1;i>=0;i--){ 
+            var e=recent[i]; 
+            var actualIndex=startIdx+i;
+            html+='<div class="history-item"><strong>📅 '+new Date(e.date).toLocaleDateString()+'</strong><br>🐝 '+(e.hornets?e.hornets.length:0)+' frelons | '+(e.hornets?e.hornets.map(function(h){return h.name}).join(', '):'?')+'<br>📍 '+(e.location&&e.location.name?e.location.name:'?')+'<div class="history-actions"><button class="btn-gold btn-sm" onclick="resumeHistEntryByIndex('+actualIndex+')">🔄 '+t('hist_resume')+'</button><button class="btn-red btn-sm" onclick="deleteHistEntry('+actualIndex+')">🗑️ '+t('hist_delete')+'</button></div></div>'; 
+        } 
+        panel.innerHTML+=html; 
+    } else { 
+        panel.innerHTML+='<div class="history-item">📭 '+t('history_empty')+'</div>'; 
+    } 
+}
+
+function resumeHistEntryByIndex(index){ 
+    var hist=getHist(); 
+    if(index<0||index>=hist.length){ alert('Entrée non trouvée'); return; } 
+    var entry=hist[index]; 
+    // Restore all data
     surveyLocation=entry.location||{lat:46.8,lng:6.8,name:''};
-    document.getElementById('locationInput').value=surveyLocation.name||'';
-    
-    // Restore inspector
     inspectorName=entry.inspectorName||'';
-    document.getElementById('inspectorInput').value=inspectorName;
-    
-    // Restore notes
     notes=entry.notes||'';
+    if(entry.personalInfo){ personalInfo=entry.personalInfo; }
+    // Update form fields
+    document.getElementById('locationInput').value=surveyLocation.name||'';
+    document.getElementById('inspectorInput').value=inspectorName;
     document.getElementById('notesField').value=notes;
-    
-    // Restore personal info
-    if(entry.personalInfo){
-        personalInfo.firstName=entry.personalInfo.firstName||'';
-        personalInfo.lastName=entry.personalInfo.lastName||'';
-        personalInfo.phone=entry.personalInfo.phone||'';
-    } else {
-        personalInfo={firstName:'',lastName:'',phone:''};
-    }
-    document.getElementById('firstName').value=personalInfo.firstName;
-    document.getElementById('lastName').value=personalInfo.lastName;
-    document.getElementById('phone').value=personalInfo.phone;
-    
+    document.getElementById('firstName').value=personalInfo.firstName||'';
+    document.getElementById('lastName').value=personalInfo.lastName||'';
+    document.getElementById('phone').value=personalInfo.phone||'';
     // Restore hornets
-    if(entry.hornets&&entry.hornets.length>0){ 
+    if(entry.hornets&&entry.hornets.length>0){
         hornets=entry.hornets.map(function(h){ 
             var nh=createHornet(h.name||'Frelon'); 
             nh.direction=h.direction||0; 
@@ -209,19 +201,7 @@ function resumeHistEntry(entry){
     } else {
         hornets=[createHornet('Frelon 1')];
     }
-    
-    // Find entry index by date for later updates
-    var hist=getHist();
-    resumedFromIndex=-1;
-    for(var i=0;i<hist.length;i++){ 
-        if(hist[i].date===entry.date){ 
-            resumedFromIndex=i; 
-            break; 
-        } 
-    }
-    
-    // Update map and UI
-    document.getElementById('locationDisplay').textContent=surveyLocation.name||surveyLocation.lat.toFixed(5)+', '+surveyLocation.lng.toFixed(5);
+    resumedFromIndex=index;
     updatePotMarker(); 
     renderAll(); 
     alert(t('pot_resumed')); 
