@@ -65,8 +65,6 @@
         .color-dot { width:35px; height:35px; border-radius:50%; cursor:pointer; border:3px solid #fff; transition:transform 0.2s; }
         .color-dot:hover { transform:scale(1.2); }
         .color-dot.selected { border-color:#000; }
-        .map-toggle-btn { background:none; border:none; cursor:pointer; font-size:0.9rem; padding:0 4px; transition:transform 0.3s; }
-        .map-toggle-btn.open { transform:rotate(90deg); }
         .header a:active { transform:scale(0.9); opacity:0.7; }
         button,a,[onclick] { -webkit-tap-highlight-color:transparent; }
     </style>
@@ -76,8 +74,8 @@
 <div class="header" style="justify-content:space-between;align-items:center;">
     <h1>🐝 VespaTimer <span style="font-size:0.8rem;color:#888;">v2.0</span></h1>
     <div class="flex-row" style="gap:12px;">
-        <a href="https://youtube.com/@VespaTimer" target="_blank" style="text-decoration:none;color:#FF0000;font-size:1.6rem;padding:4px;" title="YouTube"><i class="fab fa-youtube"></i></a>
-        <a href="https://whatsapp.com/channel/VespaTimer" target="_blank" style="text-decoration:none;color:#25D366;font-size:1.6rem;padding:4px;" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        <a href="https://youtube.com/@hornetjunkie" target="_blank" style="text-decoration:none;color:#FF0000;font-size:1.6rem;padding:4px;" title="YouTube"><i class="fab fa-youtube"></i></a>
+        <a href="https://whatsapp.com/channel/0029VbDichqDuMRfA1Yitr2b" target="_blank" style="text-decoration:none;color:#25D366;font-size:1.6rem;padding:4px;" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
     </div>
 </div>
 
@@ -113,13 +111,10 @@
 <div class="card">
     <h2>🗺️ <span data-lang="map_title">Triangulation</span></h2>
     <div id="map"></div>
-    <div class="flex-row" style="margin-top:8px;align-items:center;">
-        <button class="map-toggle-btn open" id="mapToggleBtn" onclick="toggleMapButtons()">▶</button>
-        <span id="mapButtonsContainer">
-            <button class="btn-sm" onclick="getGPS()">📍 <span data-lang="gps_btn">GPS</span></button>
-            <button class="btn-sm" onclick="manualCoords()">✍️ <span data-lang="manual_coords">Coord.</span></button>
-            <button class="btn-gold btn-sm" onclick="showHistory()">📋 <span data-lang="history_btn">Historique 90j</span></button>
-        </span>
+    <div class="flex-row" style="margin-top:8px;">
+    <button class="btn-sm" onclick="getGPS()">📍 GPS</button>
+    <button class="btn-sm" onclick="manualCoords()">✍️ Coord.</button>
+    <button class="btn-gold btn-sm" onclick="showHistory()">📋 Historique 90j</button>
     </div>
     <div id="predictionPanel" style="margin-top:8px;padding:8px;background:#f9f4e8;border-radius:12px;font-size:0.85rem;">⚠️ <span data-lang="no_flights">Ajoutez des vols pour voir les estimations</span></div>
     <div id="historyPanel"></div>
@@ -264,7 +259,6 @@ function renderAll(){
     if(!hwf.length){ statsDiv.innerHTML=t('no_flights_stats'); } else { var sh=''; for(var si=0;si<hwf.length;si++){ var shh=hwf[si]; var sc=shh.color||COLORS[hornets.indexOf(shh)%COLORS.length]; sh+='<span style="color:'+sc+';">● '+shh.name+': '+getAvg(shh).toFixed(1)+'s</span><br>'; } var ga=0; for(var gi=0;gi<hwf.length;gi++) ga+=getAvg(hwf[gi]); ga/=hwf.length; sh+='<strong>📈 Moy. globale: '+ga.toFixed(1)+'s</strong>'; statsDiv.innerHTML=sh; }
     saveAll(); if(map) drawAnalysis();
 }
-function toggleMapButtons(){ var c=document.getElementById('mapButtonsContainer'); var b=document.getElementById('mapToggleBtn'); if(c.style.display==='none'){ c.style.display='inline'; b.classList.add('open'); } else { c.style.display='none'; b.classList.remove('open'); } }
 setInterval(function(){ var anyRunning=false; for(var i=0;i<hornets.length;i++){ var h=hornets[i]; if(h.timerRunning&&h.timerStart){ anyRunning=true; var s=Math.floor((Date.now()-h.timerStart)/1000); var txt=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); var cards=document.querySelectorAll('.hornet-card'); if(cards[i]){ var displays=cards[i].querySelectorAll('.timer-display'); for(var d=0;d<displays.length;d++){ displays[d].textContent=txt; } } } } document.getElementById('liveBanner').style.display=anyRunning?'block':'none'; document.getElementById('datetime').textContent=new Date().toLocaleString(); },200);
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('service-worker.js').catch(function(){}); var refreshing=false; navigator.serviceWorker.addEventListener('controllerchange',function(){ if(!refreshing){ refreshing=true; window.location.reload(); } }); setInterval(function(){ navigator.serviceWorker.getRegistration().then(function(reg){ if(reg) reg.update(); }); },300000); }
 function boot(){ loadAll(); applyTranslations(); renderAll(); setTimeout(initMap,500); }
