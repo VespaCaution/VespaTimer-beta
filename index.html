@@ -267,7 +267,25 @@ function drawAnalysis(histData){
     }}}}}
     document.getElementById('predictionPanel').innerHTML=preds.length?'🔍 '+preds.map(function(p){return p.name+' → ~'+p.dist.toFixed(0)+'m'}).join(' · '):'⚠️ '+t('no_flights');
 }
-function showHistory(){ var hist=getHist(); var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; var recent=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); drawAnalysis(recent); var panel=document.getElementById('historyPanel'); panel.style.display='block'; panel.innerHTML='<div style="font-size:0.8rem;color:#c47b6b;margin-bottom:8px;">'+t('history_limit')+' ('+recent.length+'/'+MAX_HISTORY+')</div>'; if(recent.length){ var html=''; for(var i=recent.length-1;i>=0;i--){ var e=recent[i]; var realIndex=hist.indexOf(e); html+='<div class="history-item"><strong>📅 '+new Date(e.date).toLocaleDateString()+'</strong><br>🐝 '+(e.hornets?e.hornets.length:0)+' frelons | '+(e.hornets?e.hornets.map(function(h){return h.name}).join(', '):'?')+'<br>📍 '+(e.location?e.location.name||e.location.lat.toFixed(4)+', '+e.location.lng.toFixed(4):'?')+'<div class="history-actions"><button class="btn-gold btn-sm" onclick="resumeHistEntry(getHist()['+realIndex+'])">🔄 '+t('hist_resume')+'</button><button class="btn-red btn-sm" onclick="deleteHistEntry('+realIndex+')">🗑️ '+t('hist_delete')+'</button></div></div>'; } panel.innerHTML+=html; } else { panel.innerHTML+='<div class="history-item">📭 '+t('history_empty')+'</div>'; } }
+function showHistory(){ 
+    var hist=getHist(); 
+    var cutoff=Date.now()-HISTORY_DAYS*24*60*60*1000; 
+    var recent=hist.filter(function(e){return new Date(e.date)>new Date(cutoff);}); 
+    drawAnalysis(recent); 
+    var panel=document.getElementById('historyPanel'); 
+    panel.style.display='block'; 
+    panel.innerHTML='<div style="font-size:0.8rem;color:#c47b6b;margin-bottom:8px;">'+t('history_limit')+' ('+recent.length+'/'+MAX_HISTORY+')</div>'; 
+    if(recent.length){ 
+        var html=''; 
+        for(var i=recent.length-1;i>=0;i--){ 
+            var e=recent[i]; 
+            html+='<div class="history-item"><strong>📅 '+new Date(e.date).toLocaleDateString()+'</strong><br>🐝 '+(e.hornets?e.hornets.length:0)+' frelons | '+(e.hornets?e.hornets.map(function(h){return h.name}).join(', '):'?')+'<br>📍 '+(e.location&&e.location.name?e.location.name:'?')+'<div class="history-actions"><button class="btn-gold btn-sm" onclick="resumeHistEntry(getHist()['+i+'])">🔄 '+t('hist_resume')+'</button><button class="btn-red btn-sm" onclick="deleteHistEntry('+i+')">🗑️ '+t('hist_delete')+'</button></div></div>'; 
+        } 
+        panel.innerHTML+=html; 
+    } else { 
+        panel.innerHTML+='<div class="history-item">📭 '+t('history_empty')+'</div>'; 
+    } 
+}
 var deferredPrompt;
 window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); deferredPrompt=e; document.getElementById('installBtn2').style.display='block'; });
 var isApple=/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent);
