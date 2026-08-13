@@ -82,15 +82,21 @@
 
 <div class="card">
     <h2>👤 <span data-lang="personal_info">Infos personnelles</span></h2>
-    <div class="grid-2"><input type="text" id="firstName" data-lang-placeholder="first_name_placeholder" placeholder="Prénom" onchange="saveAll()"><input type="text" id="lastName" data-lang-placeholder="last_name_placeholder" placeholder="Nom" onchange="saveAll()"></div>
-    <input type="tel" id="phone" data-lang-placeholder="phone_placeholder" placeholder="📞 Téléphone" onchange="saveAll()" style="margin-top:6px;">
+    <div class="grid-2">
+        <input type="text" id="firstName" data-lang-placeholder="first_name_placeholder" placeholder="Prénom" oninput="personalInfo.firstName=this.value;saveAll()">
+        <input type="text" id="lastName" data-lang-placeholder="last_name_placeholder" placeholder="Nom" oninput="personalInfo.lastName=this.value;saveAll()">
+    </div>
+    <input type="tel" id="phone" data-lang-placeholder="phone_placeholder" placeholder="📞 Téléphone" oninput="personalInfo.phone=this.value;saveAll()" style="margin-top:6px;">
     <div style="margin-top:6px;">🕐 <span id="datetime"></span></div>
     <hr style="border:1px dashed #e0cfaa;margin:12px 0;">
     <h2>📍 <span data-lang="pot_label">Pot-à-Mèche</span></h2>
-    <div class="flex-row"><input type="text" id="locationInput" data-lang-placeholder="location_placeholder" placeholder="Nom du lieu ou lat,lng" style="flex:1;"><button class="btn-gold" onclick="setLocation()">💾 <span data-lang="save_btn">Enregistrer</span></button></div>
+    <div class="flex-row">
+        <input type="text" id="locationInput" data-lang-placeholder="location_placeholder" placeholder="Nom du lieu ou lat,lng" oninput="surveyLocation.name=this.value;saveAll()" style="flex:1;">
+        <button class="btn-gold" onclick="setLocation()">💾 <span data-lang="save_btn">Enregistrer</span></button>
+    </div>
     <div style="margin-top:4px;"><span id="locationDisplay"></span></div>
-    <input type="text" id="inspectorInput" data-lang-placeholder="inspector_placeholder" placeholder="👤 Inspecteur (télémètre)" onchange="saveAll()" style="margin-top:6px;">
-    <textarea id="notesField" data-lang-placeholder="notes_placeholder" placeholder="📝 Notes de relevé..." onchange="saveAll()" style="margin-top:6px;min-height:50px;"></textarea>
+    <input type="text" id="inspectorInput" data-lang-placeholder="inspector_placeholder" placeholder="👤 Inspecteur (télémètre)" oninput="inspectorName=this.value;saveAll()" style="margin-top:6px;">
+    <textarea id="notesField" data-lang-placeholder="notes_placeholder" placeholder="📝 Notes de relevé..." oninput="notes=this.value;saveAll()" style="margin-top:6px;min-height:50px;"></textarea>
     <div class="banner-live" id="liveBanner">⏱️ <span data-lang="timer_active">Chronomètre actif</span></div>
 </div>
 
