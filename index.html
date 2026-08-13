@@ -158,16 +158,14 @@ function saveHist(){ var hist=[]; try { hist=JSON.parse(localStorage.getItem('vh
 function getHist(){ try { var data=localStorage.getItem('vh_v2'); if(!data) return []; var parsed=JSON.parse(data); if(Array.isArray(parsed)) return parsed; return []; } catch(e){ localStorage.removeItem('vh_v2'); return[]; } }
 function deleteHistEntry(index){ var hist=getHist(); hist.splice(index,1); localStorage.setItem('vh_v2',JSON.stringify(hist)); showHistory(); }
 function resumeHistEntryByIndex(index){ 
-function resumeHistEntryByIndex(index){ 
     var hist=getHist(); 
-    if(index<0||index>=hist.length){ alert('Entrée non trouvée'); return; } 
+    if(index<0||index>=hist.length) return; 
     var entry=hist[index]; 
     surveyLocation=entry.location||{lat:46.8,lng:6.8,name:''}; 
     inspectorName=entry.inspectorName||''; 
     notes=entry.notes||''; 
     if(entry.personalInfo){ personalInfo=entry.personalInfo; } 
     document.getElementById('locationInput').value=surveyLocation.name||''; 
-    document.getElementById('locationDisplay').textContent=surveyLocation.name||surveyLocation.lat.toFixed(5)+', '+surveyLocation.lng.toFixed(5); 
     document.getElementById('inspectorInput').value=inspectorName; 
     document.getElementById('notesField').value=notes; 
     document.getElementById('firstName').value=personalInfo.firstName||''; 
@@ -181,15 +179,13 @@ function resumeHistEntryByIndex(index){
             nh.color=h.color||null; 
             return nh; 
         }); 
-    } else { 
-        hornets=[createHornet('Frelon 1')]; 
-    } 
+    } else { hornets=[createHornet('Frelon 1')]; } 
     resumedFromIndex=index; 
     localStorage.setItem('resumed_idx',resumedFromIndex); 
     updatePotMarker(); 
     renderAll(); 
     alert(t('pot_resumed')); 
-}
+} 
 function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; if(id==='compassModal') stopCompass(); }
 function openCompassModal(){ openModal('compassModal'); startCompass(); setTimeout(drawGraduations,100); }
