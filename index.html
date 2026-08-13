@@ -224,18 +224,10 @@ function resetAll(){ if(!confirm(t('confirm_reset'))) return; saveHist(); resume
 
 function changeHornetColor(hornetId){
     var h=hornets.find(function(x){return x.id===hornetId}); if(!h) return;
-    var available=[];
-    for(var i=0;i<COLORS.length;i++){
-        var isUsed=false;
-        for(var j=0;j<hornets.length;j++){
-            if(hornets[j].id!==hornetId&&hornets[j].color===COLORS[i]){ isUsed=true; break; }
-        }
-        if(!isUsed){ available.push(COLORS[i]); }
-    }
     var html='<div style="display:flex;flex-wrap:wrap;gap:8px;padding:10px;">';
-    for(var k=0;k<available.length;k++){
-        var isSelected=(h.color===available[k]);
-        html+='<div onclick="selectColor('+hornetId+',\''+available[k]+'\')" class="color-dot'+(isSelected?' selected':'')+'" style="background:'+available[k]+';" title="'+available[k]+'"></div>';
+    for(var i=0;i<COLORS.length;i++){
+        var isSelected=(h.color===COLORS[i]);
+        html+='<div onclick="selectColor('+hornetId+',\''+COLORS[i]+'\')" class="color-dot'+(isSelected?' selected':'')+'" style="background:'+COLORS[i]+';" title="'+COLORS[i]+'"></div>';
     }
     html+='</div>';
     document.getElementById('colorPickerContent').innerHTML=html;
@@ -243,10 +235,15 @@ function changeHornetColor(hornetId){
 }
     function selectColor(hornetId,color){
     var h=hornets.find(function(x){return x.id===hornetId}); if(!h) return;
-    for(var i=0;i<hornets.length;i++){ if(hornets[i].id!==hornetId&&hornets[i].color===color){ alert(t('color_in_use')+' '+hornets[i].name); return; } }
+    for(var i=0;i<hornets.length;i++){ 
+        if(hornets[i].id!==hornetId&&hornets[i].color===color){ 
+            alert(t('color_in_use')+' '+hornets[i].name); 
+            return; 
+        } 
+    }
     h.color=color;
     closeModal('colorPickerModal'); saveAll(); renderAll(); if(map) drawAnalysis();
-}
+    }
 
 // ============ LONG PRESS ============
 
