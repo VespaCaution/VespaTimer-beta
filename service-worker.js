@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vespatimer-beta-v2-' + Date.now();
+const CACHE_NAME = 'vespatimer-v2-' + Date.now();
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -11,8 +11,11 @@ const ASSETS_TO_CACHE = [
   'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
 ];
 
+// Map tile cache with dynamic handling
+const MAP_TILE_CACHE = 'vespatimer-tiles-v2';
+
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installing VespaTimer Beta v2.0...');
+  console.log('[Service Worker] Installing VespaTimer v2.0...');
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -28,7 +31,7 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME) {
+            if (cacheName !== CACHE_NAME && cacheName !== MAP_TILE_CACHE) {
               console.log('[SW] Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
@@ -46,15 +49,59 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (!event.request.url.startsWith('http')) return;
 
+  // Handle map tiles separately for offline caching
+  if (event.request.url.includes('tile.openstreetmap.org')) {
+    event.respondWith(
+      caches.match(event.request)
+        .then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+          
+          return fetch(event.request)
+            .then((response) => {
+              if (!response || response.status !== 200) return response;
+              
+              const responseToCache = response.clone();
+              caches.open(MAP_TILE_CACHE)
+                .then((cache) => cache.put(event.request, responseToCache))
+                .catch(() => {
+                  // If tile cache is full, delete oldest entries
+                  caches.open(MAP_TILE_CACHE).then((cache) => {
+                    cache.keys().then((keys) => {
+                      if (keys.length > 200) {
+                        // Delete oldest 50 tiles
+                        for (let i = 0; i < 50; i++) {
+                          cache.delete(keys[i]);
+                        }
+                      }
+                    });
+                  });
+                });
+              
+              return response;
+            })
+            .catch(() => {
+              // Return a placeholder for offline map tiles
+              return new Response('', { status: 204 });
+            });
+        })
+    );
+    return;
+  }
+
+  // Handle all other requests
   event.respondWith(
     caches.match(event.request)
       .then((cachedResponse) => {
         if (cachedResponse) return cachedResponse;
+        
         return fetch(event.request)
           .then((response) => {
             if (!response || response.status !== 200 || response.type !== 'basic') return response;
+            
             const responseToCache = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+            caches.open(CACHE_NAME)
+              .then((cache) => cache.put(event.request, responseToCache));
+            
             return response;
           })
           .catch(() => {
