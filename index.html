@@ -214,39 +214,6 @@
 </div>
 
 <div class="modal-overlay" id="optionsModal"><div class="modal"><button class="modal-close" onclick="closeModal('optionsModal')">✕</button><h2>⚙️ <span data-lang="options">Options</span></h2><div style="display:flex;flex-direction:column;gap:10px;"><p><strong data-lang="language">Langue:</strong> <select id="langSelectModal" onchange="changeLanguage(this.value)" style="width:auto;"><option value="fr">🇫🇷 Français</option><option value="en">🇬🇧 English</option><option value="de">🇩🇪 Deutsch</option><option value="it">🇮🇹 Italiano</option><option value="rm">🇨🇭 Rumantsch</option></select></p><button onclick="closeModal('optionsModal');openModal('aboutModal')">ℹ️ <span data-lang="about_btn">À propos</span></button><button onclick="closeModal('optionsModal');openModal('newsModal')">📰 <span data-lang="news">Nouvelles</span></button><button onclick="window.location.href='mailto:benhupka@hotmail.com?subject=Contact%20VespaTimer'">📧 <span data-lang="contact">Contact</span></button><button class="btn-gold" id="installBtn2" style="display:none;" onclick="installPWA()">📲 <span data-lang="install_app">Installer l'app</span></button></div></div></div>
-<div class="modal-overlay" id="newsModal"><div class="modal"><button class="modal-close" onclick="closeModal('newsModal');openModal('optionsModal')">✕</button><h2>📰 <span data-lang="news">Nouvelles</span></h2><div style="font-size:0.9rem;line-height:1.7;"><p data-lang="news_text">Bienvenue sur la version 2.0 de VespaTimer !</p></div></div></div>
-<div class="modal-overlay" id="exportModal"><div class="modal"><button class="modal-close" onclick="closeModal('exportModal')">✕</button><h2>📤 <span data-lang="export_import">Export / Import</span></h2><div style="display:flex;flex-direction:column;gap:8px;"><button onclick="exportJSON()">📤 JSON</button><button onclick="exportPDF()">📄 PDF</button><button onclick="exportGPX()">📍 GPX</button><button onclick="exportKML()">🌍 KML</button><button onclick="exportHistory()">📋 <span data-lang="export_history">Exporter historique</span></button><hr><button class="btn-gold" onclick="document.getElementById('importFile').click()">📥 <span data-lang="import_btn">Importer</span> (JSON)</button><button class="btn-gold" onclick="document.getElementById('importHistFile').click()">📋 <span data-lang="import_history">Importer historique</span></button><input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)"><input type="file" id="importHistFile" accept=".json" style="display:none;" onchange="importHistory(event)"><hr><button class="btn-red" onclick="resetAll()">🔄 <span data-lang="reset_btn">Nouveau</span></button></div></div></div>
-<div class="modal-overlay" id="aboutModal"><div class="modal">
-    <button class="modal-close" onclick="closeModal('aboutModal');openModal('optionsModal')">✕</button>
-    <h2>ℹ️ <span data-lang="about_title_full">À propos de VespaTimer</span></h2>
-    <div style="font-size:0.9rem;line-height:1.7;">
-        <p data-lang="about_text">Bienvenue sur VespaTimer</p>
-        <p>⚠️ <span data-lang="about_report">N'oubliez pas de signaler vos observations sur :</span> <a href="https://frelonasiatique.ch" target="_blank">frelonasiatique.ch</a></p>
-        
-        <div style="background:#f9f4e8;border-radius:12px;padding:12px;margin:10px 0;">
-            <h3 style="color:#d4a853;margin-bottom:8px;" data-lang="compass_calibration_title">🧭 Calibration de la boussole</h3>
-            <strong data-lang="compass_calibration_when">QUAND calibrer :</strong><br>
-            <span data-lang="compass_calibration_when_text"></span><br><br>
-            <strong data-lang="compass_calibration_how">COMMENT calibrer :</strong><br>
-            <span data-lang="compass_calibration_how_text"></span>
-        </div>
-        
-        <div style="background:#f9f4e8;border-radius:12px;padding:12px;margin:10px 0;">
-            <h3 style="color:#d4a853;margin-bottom:8px;" data-lang="color_change_title">🎨 Changer la couleur d'un frelon</h3>
-            <strong data-lang="color_change_method">Méthode :</strong><br>
-            <span data-lang="color_change_method_text"></span><br><br>
-            <strong data-lang="color_change_tip">Astuce :</strong><br>
-            <span data-lang="color_change_tip_text"></span>
-        </div>
-
-        <p data-lang="about_instructions_detail">Instructions</p>
-        <p data-lang="about_happy">🐝 Bonne chasse ! 🙂</p>
-        <hr style="border:1px dashed #e0cfaa;margin:12px 0;">
-        <p style="font-size:0.78rem;color:#888;"><span data-lang="about_footer1">Requiert une connexion Internet</span><br><span data-lang="about_footer2">Trouvez de plus amples informations sur : stopfrelons.ch</span></p>
-    </div>
-</div></div>
-<div class="modal-overlay" id="compassModal"><div class="modal" style="text-align:center;background:#1a1a2e;color:white;border-radius:20px;width:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:20px;"><button class="modal-close" onclick="closeModal('compassModal');stopCompass()" style="color:white;position:absolute;top:10px;right:14px;z-index:10;">✕</button><h3 style="color:#d4a853;margin-bottom:10px;">🧭 Boussole</h3><div id="compassContainer" style="position:relative;width:300px;height:300px;"><svg viewBox="0 0 300 300" style="width:100%;height:100%;position:absolute;top:0;left:0;"><circle cx="150" cy="150" r="145" fill="#1a1a2e" stroke="#d4a853" stroke-width="3"/><circle cx="150" cy="150" r="125" fill="none" stroke="rgba(255,255,255,0.1)"/><circle cx="150" cy="150" r="105" fill="none" stroke="rgba(255,255,255,0.05)"/><g id="compassGraduations"></g><text x="150" y="22" fill="white" font-size="18" text-anchor="middle" font-weight="bold">N</text><text x="150" y="288" fill="white" font-size="14" text-anchor="middle">S</text><text x="278" y="155" fill="white" font-size="14" text-anchor="middle">E</text><text x="22" y="155" fill="white" font-size="14" text-anchor="middle">O</text></svg><div id="compassNeedle" style="position:absolute;top:5px;left:50%;width:4px;height:140px;margin-left:-2px;transform-origin:bottom center;transition:transform 0.3s;z-index:5;"><div style="width:4px;height:70px;background:linear-gradient(to top,#c47b6b,#d4a853);border-radius:2px 2px 0 0;"></div><div style="width:4px;height:70px;background:linear-gradient(to bottom,#666,#333);border-radius:0 0 2px 2px;"></div></div><div style="position:absolute;top:50%;left:50%;width:16px;height:16px;margin:-8px;background:#d4a853;border-radius:50%;border:3px solid white;z-index:10;"></div></div><div id="compassDirection" style="margin-top:15px;font-size:1.5rem;font-weight:bold;color:#d4a853;">--°</div></div></div>
-<div class="modal-overlay" id="colorPickerModal"><div class="modal" style="max-width:350px;"><button class="modal-close" onclick="closeModal('colorPickerModal')">✕</button><h3>🎨 Choisir une couleur</h3><div id="colorPickerContent"></div></div></div>
 
 <!-- Custom Alert Modal -->
 <div class="custom-alert-overlay" id="customAlertOverlay">
@@ -257,6 +224,45 @@
     </div>
 </div>
 
+<!-- Options Modal -->
+<div class="modal-overlay" id="optionsModal"><div class="modal"><button class="modal-close" onclick="closeModal('optionsModal')">✕</button><h2>⚙️ <span data-lang="options">Options</span></h2><div style="display:flex;flex-direction:column;gap:10px;"><p><strong data-lang="language">Langue:</strong> <select id="langSelectModal" onchange="changeLanguage(this.value)" style="width:auto;"><option value="fr">🇫🇷 Français</option><option value="en">🇬🇧 English</option><option value="de">🇩🇪 Deutsch</option><option value="it">🇮🇹 Italiano</option><option value="rm">🇨🇭 Rumantsch</option></select></p><button onclick="closeModal('optionsModal');openModal('aboutModal')">ℹ️ <span data-lang="about_btn">À propos</span></button><button onclick="closeModal('optionsModal');openModal('newsModal')">📰 <span data-lang="news">Nouvelles</span></button><button onclick="window.location.href='mailto:benhupka@hotmail.com?subject=Contact%20VespaTimer'">📧 <span data-lang="contact">Contact</span></button><button class="btn-gold" id="installBtn2" style="display:none;" onclick="installPWA()">📲 <span data-lang="install_app">Installer l'app</span></button></div></div></div>
+
+<!-- News Modal -->
+<div class="modal-overlay" id="newsModal"><div class="modal"><button class="modal-close" onclick="closeModal('newsModal');openModal('optionsModal')">✕</button><h2>📰 <span data-lang="news">Nouvelles</span></h2><div style="font-size:0.9rem;line-height:1.7;"><p data-lang="news_text">Bienvenue sur la version 2.0 de VespaTimer !</p></div></div></div>
+
+<!-- Export/Import Modal -->
+<div class="modal-overlay" id="exportModal"><div class="modal"><button class="modal-close" onclick="closeModal('exportModal')">✕</button><h2>📤 <span data-lang="export_import">Export / Import</span></h2><div style="display:flex;flex-direction:column;gap:8px;"><button onclick="exportJSON()">📤 JSON</button><button onclick="exportPDF()">📄 PDF</button><button onclick="exportGPX()">📍 GPX</button><button onclick="exportKML()">🌍 KML</button><button onclick="exportHistory()">📋 <span data-lang="export_history">Exporter historique</span></button><hr><button class="btn-gold" onclick="document.getElementById('importFile').click()">📥 <span data-lang="import_btn">Importer</span> (JSON)</button><button class="btn-gold" onclick="document.getElementById('importHistFile').click()">📋 <span data-lang="import_history">Importer historique</span></button><input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)"><input type="file" id="importHistFile" accept=".json" style="display:none;" onchange="importHistory(event)"><hr><button class="btn-red" onclick="resetAll()">🔄 <span data-lang="reset_btn">Nouveau</span></button></div></div></div>
+
+<!-- About Modal -->
+<div class="modal-overlay" id="aboutModal"><div class="modal"><button class="modal-close" onclick="closeModal('aboutModal');openModal('optionsModal')">✕</button><h2>ℹ️ <span data-lang="about_title_full">À propos de VespaTimer</span></h2><div style="font-size:0.9rem;line-height:1.7;">
+<p data-lang="about_text">Bienvenue sur VespaTimer</p>
+<p>⚠️ <span data-lang="about_report">N'oubliez pas de signaler vos observations sur :</span> <a href="https://frelonasiatique.ch" target="_blank">frelonasiatique.ch</a></p>
+<div style="background:#f9f4e8;border-radius:12px;padding:12px;margin:10px 0;">
+<h3 style="color:#d4a853;margin-bottom:8px;" data-lang="compass_calibration_title">🧭 Calibration de la boussole</h3>
+<strong data-lang="compass_calibration_when">QUAND calibrer :</strong><br>
+<span data-lang="compass_calibration_when_text"></span><br><br>
+<strong data-lang="compass_calibration_how">COMMENT calibrer :</strong><br>
+<span data-lang="compass_calibration_how_text"></span>
+</div>
+<div style="background:#f9f4e8;border-radius:12px;padding:12px;margin:10px 0;">
+<h3 style="color:#d4a853;margin-bottom:8px;" data-lang="color_change_title">🎨 Changer la couleur d'un frelon</h3>
+<strong data-lang="color_change_method">Méthode :</strong><br>
+<span data-lang="color_change_method_text"></span><br><br>
+<strong data-lang="color_change_tip">Astuce :</strong><br>
+<span data-lang="color_change_tip_text"></span>
+</div>
+<p data-lang="about_instructions_detail">Instructions</p>
+<p data-lang="about_happy">🐝 Bonne chasse ! 🙂</p>
+<hr style="border:1px dashed #e0cfaa;margin:12px 0;">
+<p style="font-size:0.78rem;color:#888;"><span data-lang="about_footer1">Requiert une connexion Internet</span><br><span data-lang="about_footer2">Trouvez de plus amples informations sur : stopfrelons.ch</span></p>
+</div></div></div>
+
+<!-- Compass Modal -->
+<div class="modal-overlay" id="compassModal"><div class="modal" style="text-align:center;background:#1a1a2e;color:white;border-radius:20px;width:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:20px;"><button class="modal-close" onclick="closeModal('compassModal');stopCompass()" style="color:white;position:absolute;top:10px;right:14px;z-index:10;">✕</button><h3 style="color:#d4a853;margin-bottom:10px;">🧭 Boussole</h3><div id="compassContainer" style="position:relative;width:300px;height:300px;"><svg viewBox="0 0 300 300" style="width:100%;height:100%;position:absolute;top:0;left:0;"><circle cx="150" cy="150" r="145" fill="#1a1a2e" stroke="#d4a853" stroke-width="3"/><circle cx="150" cy="150" r="125" fill="none" stroke="rgba(255,255,255,0.1)"/><circle cx="150" cy="150" r="105" fill="none" stroke="rgba(255,255,255,0.05)"/><g id="compassGraduations"></g><text x="150" y="22" fill="white" font-size="18" text-anchor="middle" font-weight="bold">N</text><text x="150" y="288" fill="white" font-size="14" text-anchor="middle">S</text><text x="278" y="155" fill="white" font-size="14" text-anchor="middle">E</text><text x="22" y="155" fill="white" font-size="14" text-anchor="middle">O</text></svg><div id="compassNeedle" style="position:absolute;top:5px;left:50%;width:4px;height:140px;margin-left:-2px;transform-origin:bottom center;transition:transform 0.3s;z-index:5;"><div style="width:4px;height:70px;background:linear-gradient(to top,#c47b6b,#d4a853);border-radius:2px 2px 0 0;"></div><div style="width:4px;height:70px;background:linear-gradient(to bottom,#666,#333);border-radius:0 0 2px 2px;"></div></div><div style="position:absolute;top:50%;left:50%;width:16px;height:16px;margin:-8px;background:#d4a853;border-radius:50%;border:3px solid white;z-index:10;"></div></div><div id="compassDirection" style="margin-top:15px;font-size:1.5rem;font-weight:bold;color:#d4a853;">--°</div></div></div>
+
+<!-- Color Picker Modal -->
+<div class="modal-overlay" id="colorPickerModal"><div class="modal" style="max-width:350px;"><button class="modal-close" onclick="closeModal('colorPickerModal')">✕</button><h3>🎨 Choisir une couleur</h3><div id="colorPickerContent"></div></div></div>
+    
 <script>
 var hornets=[],surveyLocation={lat:46.8,lng:6.8,name:''},inspectorName='',notes='',personalInfo={firstName:'',lastName:'',phone:''},currentLang='fr',map=null,potMarker=null,mapLines=[],collapsedCards={},compassActive=false,compassSensor=null;
 var COLORS=['#1a1a1a','#c41e3a','#0d6b35','#6b1a8a','#0d4a8c','#e85d04','#7b2d8b','#00a896','#d00000','#3a0ca3','#f48c06','#0077b6','#9d0208','#2d6a4f','#e07a5f','#3d405b','#81b29a','#f2cc8f','#ee9b00','#386641'];
