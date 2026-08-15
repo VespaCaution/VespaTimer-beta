@@ -1,5 +1,5 @@
 {
-  "name": "VespaTimer",
+  "name": "VespaTimer - Outil numérique pour le pot-à-mêche",
   "short_name": "VespaTimer",
   "description": "Assistant digital pour relevés Pot-à-Mèche et triangulation de nids de frelons asiatiques",
   "start_url": "./index.html",
