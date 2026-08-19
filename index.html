@@ -166,7 +166,7 @@
 
 <div class="modal-overlay" id="colorPickerModal"><div class="modal" style="max-width:350px;"><button class="modal-close" onclick="closeModal('colorPickerModal')">✕</button><h3>🎨 Choisir une couleur</h3><div id="colorPickerContent"></div></div></div>
 
-<div class="modal-overlay" id="langModal"><div class="modal" style="max-width:350px;padding-top:15px;"><button class="modal-close" onclick="closeModal('langModal')" style="top:12px;right:12px;">✕</button><h3 style="margin:0;padding-right:30px;">🌍 Langue</h3><div id="langOptions" style="margin-top:15px;"></div></div></div>
+<div class="modal-overlay" id="langModal"><div class="modal" style="max-width:350px;padding-top:15px;"><div style="display:flex;align-items:center;justify-content:space-between;"><h3 style="margin:0;">🌍 Langue</h3><button class="modal-close" onclick="closeModal('langModal')" style="position:static;">✕</button></div><div id="langOptions" style="margin-top:15px;"></div></div></div>
 
 <div class="modal-overlay" id="coordModal"><div class="modal" style="max-width:350px;"><button class="modal-close" onclick="closeModal('coordModal')">✕</button><h3>✍️ Coordonnées</h3><div class="coord-input-group"><label>Latitude</label><input type="number" id="coordLatInput" step="any" value="46.80000"></div><div class="coord-input-group"><label>Longitude</label><input type="number" id="coordLngInput" step="any" value="6.80000"></div><button class="btn-gold" onclick="saveManualCoords()" style="width:100%;margin-top:10px;">💾 Enregistrer</button></div></div>
 
